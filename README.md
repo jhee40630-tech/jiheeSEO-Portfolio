@@ -21,29 +21,39 @@
 6. **상세페이지**: 클릭하면 좌측에 슬라이드(이전/다음 화살표, 좌우 방향키, 카운터),
    우측에 정보패널(제목, 폴더명, 썸네일 그리드)이 뜸.
 
-## ⚠️ 반드시 확인해야 할 것 — `script.js`의 `PROJECTS` 배열
+## ⚠️ 반드시 확인해야 할 것 — `script.js`의 `ROWS` 배열
 
-대화 중 정확한 폴더명이 확인되지 않은 3개 항목에 `TODO` 표시를 해두었습니다.
-실제 저장소의 `images/Personal/` 하위 폴더명과 **철자·대소문자까지 정확히** 맞춰서
-`id` 값을 교체해주세요.
+스크린샷 속 제목(Gate / Pillar / Sci-Fi Container)을 기준으로 폴더명을 추정해
+`TODO` 표시를 해둔 3개 항목이 있습니다. 실제 저장소의 `images/Personal/` 하위
+폴더명과 **철자·대소문자까지 정확히** 맞춰서 `id` 값을 교체해주세요.
 
 ```js
-const PROJECTS = [
-  { id: '10Desert',    title: 'Desert',    size: 'large'  },
-  { id: '09Gate',       title: 'Gate',       size: 'large'  }, // TODO
-  { id: '08Trebuchet',  title: 'Trebuchet',  size: 'medium' },
-  { id: '07Alley',      title: 'Alley',      size: 'medium' },
-  { id: '06Project',    title: 'Project 06', size: 'medium' }, // TODO
-  { id: '05Computer',   title: 'Computer',   size: 'medium' },
-  { id: '04Project',    title: 'Project 04', size: 'medium' }, // TODO
-  { id: '03Zbrush',     title: 'Zbrush',     size: 'medium' },
-  { id: '02House',      title: 'House',      size: 'small'  },
+const ROWS = [
+  [
+    { id: '10Desert',   title: 'Desert',            category: 'Environment' },
+    { id: '09Gate',      title: 'Gate',               category: 'Environment' }, // TODO
+  ],
+  [
+    { id: '08Trebuchet', title: 'Trebuchet',          category: 'Hard Surface' },
+    { id: '07Alley',     title: 'Alley',              category: 'Environment' },
+    { id: '06Pillar',    title: 'Pillar',             category: 'Environment', narrow: true }, // TODO
+  ],
+  [
+    { id: '05Computer',  title: 'Computer',           category: 'Prop' },
+    { id: '04SciFiContainer', title: 'Sci-Fi Container', category: 'Hard Surface' }, // TODO
+    { id: '03Zbrush',    title: 'Zbrush',             category: 'Sculpt' },
+  ],
+  [
+    { id: '02House',     title: 'House',              category: 'Environment' },
+  ],
 ];
 ```
 
-`size` 값의 개수는 반드시 `large × 2`, `medium × 3+3`, `small × 1`을 유지해야
-피라미드 배치(2/3/3/1)가 깨지지 않습니다. 순서를 바꾸고 싶을 때는 배열 순서만
-바꾸면 됩니다 (위에서부터 그대로 그리드에 반영됨).
+`ROWS`는 배열 안에 배열(행)을 담는 2차원 구조입니다. 한 행에 몇 개를 넣느냐가
+곧 그 줄의 타일 개수이고, 모든 행의 **높이는 항상 같으며**(`style.css`의
+`--row-h`), 폭만 행 안에서 타일 개수만큼 나뉩니다. 특정 타일만 더 좁게 하고
+싶으면 그 항목에 `narrow: true`를 추가하면 됩니다(현재 06 Pillar에 적용됨 —
+기둥처럼 세로로 긴 소재라 폭을 다른 타일보다 좁혔습니다).
 
 ## 이미지가 하나라도 안 뜬다면
 1. 폴더명이 `PROJECTS` 배열의 `id`와 정확히 일치하는지 (대소문자 포함)
