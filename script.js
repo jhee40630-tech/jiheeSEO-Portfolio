@@ -1,23 +1,22 @@
 /* =========================================================
    PROJECTS — one entry per /images/ subfolder.
 
-   id        : exact folder name under /images/  (case-sensitive on
-               GitHub Pages! must match on-disk name exactly)
-   label     : title shown on the tile and detail page
-   category  : small tag shown above the title (ENVIRONMENT / PROP / SCULPT ...)
-   count     : how many numbered images are in that folder (1.png, 2.png, ...)
-   ext       : file extension used inside that folder
-   desc      : short paragraph shown on the detail page — write your own
-   role/scope/focus/pipeline : info panel fields, like the ROLE / SCOPE /
-               FOCUS / PIPELINE block on your reference site
+   id       : exact folder name under /images/  (case-sensitive on
+              GitHub Pages! must match the on-disk folder name exactly —
+              this is the #1 cause of broken thumbnails)
+   label    : title shown on the tile and detail page
+   category : small tag shown above the title (ENVIRONMENT / PROP / SCULPT ...)
+   desc / role / scope / focus / pipeline : detail-page text fields
 
-   To add a new project: copy a block, change the fields, done —
-   the mosaic tile AND its detail page are both generated from this.
+   NOTE: you no longer need to specify a file extension or an image
+   count. The code below tries 1.png, 1.jpg, 1.jpeg, 1.webp (etc.)
+   automatically, and keeps counting 2, 3, 4... until a number has
+   no matching file in ANY extension — that's how it finds the
+   right files and the right length by itself.
    ========================================================= */
 const PROJECTS = [
   {
     id: "01University", label: "University", category: "ENVIRONMENT",
-    count: 1, ext: "png",
     desc: "대학교를 배경으로 한 환경 아트 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Full Pipeline",
     scope: "Environment Art · Lighting · Scene Composition",
@@ -26,7 +25,6 @@ const PROJECTS = [
   },
   {
     id: "02House", label: "House", category: "ENVIRONMENT",
-    count: 1, ext: "png",
     desc: "주택을 소재로 한 환경 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Full Pipeline",
     scope: "Environment Art · Material Authoring · Lighting",
@@ -35,7 +33,6 @@ const PROJECTS = [
   },
   {
     id: "03Zbrush", label: "ZBrush Sculpt", category: "SCULPT",
-    count: 1, ext: "png",
     desc: "ZBrush 하이폴리 스컬핑 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Sculpting",
     scope: "High-poly Sculpt · Surface Detail",
@@ -44,7 +41,6 @@ const PROJECTS = [
   },
   {
     id: "04Sci-fi Container", label: "Sci-fi Container", category: "PROP",
-    count: 1, ext: "png",
     desc: "SF 컨테이너 프롭 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Full Pipeline",
     scope: "Hard-surface Modeling · Texturing",
@@ -53,7 +49,6 @@ const PROJECTS = [
   },
   {
     id: "05Computer", label: "Computer", category: "PROP",
-    count: 1, ext: "png",
     desc: "레트로 컴퓨터 프롭 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Full Pipeline",
     scope: "Hard-surface Modeling · Texturing · Set Dressing",
@@ -62,7 +57,6 @@ const PROJECTS = [
   },
   {
     id: "06Pillar", label: "Pillar", category: "PROP",
-    count: 1, ext: "png",
     desc: "석조 기둥 프롭 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Full Pipeline",
     scope: "Modeling · Sculpting · Texturing",
@@ -71,7 +65,6 @@ const PROJECTS = [
   },
   {
     id: "07Alley", label: "Alley", category: "ENVIRONMENT",
-    count: 9, ext: "png",
     desc: "골목길을 배경으로 한 환경 아트 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Full Pipeline",
     scope: "Environment Art · Lighting · Scene Composition",
@@ -80,7 +73,6 @@ const PROJECTS = [
   },
   {
     id: "08Trebuchet", label: "Trebuchet", category: "PROP",
-    count: 1, ext: "png",
     desc: "투석기(트레뷰셋) 프롭 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Full Pipeline",
     scope: "Modeling · Texturing · Set Dressing",
@@ -89,7 +81,6 @@ const PROJECTS = [
   },
   {
     id: "09Gate", label: "Gate", category: "ENVIRONMENT",
-    count: 1, ext: "png",
     desc: "성문/게이트를 배경으로 한 환경 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Full Pipeline",
     scope: "Environment Art · Sculpting · Lighting",
@@ -98,7 +89,6 @@ const PROJECTS = [
   },
   {
     id: "10Desert", label: "Desert", category: "ENVIRONMENT",
-    count: 1, ext: "png",
     desc: "사막 환경 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
     role: "Full Pipeline",
     scope: "Environment Art · Terrain · Lighting",
@@ -107,17 +97,55 @@ const PROJECTS = [
   },
 ];
 
+/* extensions tried, in this order, for every numbered image file */
+const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "PNG", "JPG", "JPEG"];
+/* safety cap — stop looking once a project reaches this many images
+   even if files somehow kept going (protects against infinite loops) */
+const MAX_IMAGES_PER_PROJECT = 40;
+
 /* grid rhythm for the mosaic — first entry is always the feature tile */
 const PATTERN = ["feature", "wide", "narrow", "narrow", "wide", "wide", "narrow", "narrow", "wide", "narrow"];
 
-/* helper: build the list of image paths for a project, e.g.
-   images/07Alley/1.png, images/07Alley/2.png, ... */
-function projectImages(project) {
-  const paths = [];
-  for (let i = 1; i <= project.count; i++) {
-    paths.push(`images/${project.id}/${i}.${project.ext}`);
+/* cache so we don't re-probe the same project twice */
+const imageCache = new Map();
+
+/** Try loading a single URL, resolving true/false instead of throwing. */
+function testImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = encodeURI(src);
+  });
+}
+
+/** Find which extension (if any) exists for images/<id>/<index>.<ext> */
+async function resolveExtension(basePathNoExt) {
+  for (const ext of IMAGE_EXTENSIONS) {
+    // eslint-disable-next-line no-await-in-loop
+    if (await testImage(`${basePathNoExt}.${ext}`)) return ext;
   }
-  return paths;
+  return null;
+}
+
+/**
+ * Auto-detect every image belonging to a project: tries 1, 2, 3...
+ * across all known extensions, and stops at the first number that
+ * has no match in any extension.
+ */
+async function loadProjectImages(project) {
+  if (imageCache.has(project.id)) return imageCache.get(project.id);
+
+  const found = [];
+  for (let i = 1; i <= MAX_IMAGES_PER_PROJECT; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    const ext = await resolveExtension(`images/${project.id}/${i}`);
+    if (!ext) break;
+    found.push(`images/${project.id}/${i}.${ext}`);
+  }
+
+  imageCache.set(project.id, found);
+  return found;
 }
 
 /* =========================================================
@@ -132,34 +160,40 @@ function buildMosaic() {
 
   PROJECTS.forEach((project, i) => {
     const shape = PATTERN[i % PATTERN.length];
-    const cover = projectImages(project)[0];
-    const displayPath = `/${project.id}/1.${project.ext}`;
 
     const tile = document.createElement("a");
-    tile.className = `tile ${shape}`;
+    tile.className = "tile loading " + shape;
     tile.href = `#work/${encodeURIComponent(project.id)}`;
 
     tile.innerHTML = `
       <span class="tile-index">${String(i + 1).padStart(2, "0")}</span>
-      <img src="${encodeURI(cover)}" alt="${project.label}" loading="lazy">
       <div class="tile-scrim"></div>
       <div class="tile-caption">
         <span class="tile-name">${project.label}</span>
-        <span class="tile-path">${displayPath}</span>
+        <span class="tile-path">/${project.id}/</span>
       </div>
     `;
-
-    const img = tile.querySelector("img");
-    img.addEventListener("error", () => {
-      tile.classList.add("placeholder");
-      img.remove();
-      const label = document.createElement("span");
-      label.className = "placeholder-label";
-      label.textContent = `${project.label}\n${displayPath}`;
-      tile.prepend(label);
-    }, { once: true });
-
     mosaic.appendChild(tile);
+
+    // resolve the cover image asynchronously, then fill it in (or fall
+    // back to a clear placeholder if the folder has no readable image)
+    loadProjectImages(project).then((images) => {
+      if (!images.length) {
+        tile.classList.remove("loading");
+        tile.classList.add("placeholder");
+        const label = document.createElement("span");
+        label.className = "placeholder-label";
+        label.textContent = `${project.label}\nimages/${project.id}/ 폴더에\n이미지를 찾지 못했습니다`;
+        tile.prepend(label);
+        return;
+      }
+      const img = document.createElement("img");
+      img.src = encodeURI(images[0]);
+      img.alt = project.label;
+      img.loading = "lazy";
+      tile.insertBefore(img, tile.firstChild.nextSibling);
+      tile.classList.remove("loading");
+    });
   });
 
   if (countEl) countEl.textContent = `${PROJECTS.length} PROJECTS`;
@@ -168,11 +202,20 @@ function buildMosaic() {
 function initHeroFallback() {
   const heroImg = document.querySelector(".hero-img");
   if (!heroImg) return;
-  heroImg.addEventListener("error", () => {
-    heroImg.remove();
-    document.querySelector(".hero-media").style.background =
-      "linear-gradient(160deg, #241d15, #0e0d0c 70%)";
-  }, { once: true });
+  const base = heroImg.dataset.base || "images/01University/1";
+  let i = 0;
+  const tryNext = () => {
+    if (i >= IMAGE_EXTENSIONS.length) {
+      heroImg.remove();
+      document.querySelector(".hero-media").style.background =
+        "linear-gradient(160deg, #241d15, #0e0d0c 70%)";
+      return;
+    }
+    heroImg.src = encodeURI(`${base}.${IMAGE_EXTENSIONS[i]}`);
+    i++;
+  };
+  heroImg.addEventListener("error", tryNext);
+  tryNext();
 }
 
 function initNavScroll() {
@@ -212,14 +255,12 @@ const detailEl = {
   nextProject: document.getElementById("detail-nextproject"),
 };
 
-function openDetail(id) {
+async function openDetail(id) {
   const project = PROJECTS.find((p) => p.id === id);
   if (!project) { location.hash = "#top"; return; }
 
   detail.project = project;
-  detail.images = projectImages(project);
   detail.index = 0;
-  detail.playing = detail.images.length > 1;
 
   detailEl.category.textContent = project.category;
   detailEl.title.textContent = project.label;
@@ -229,31 +270,41 @@ function openDetail(id) {
   detailEl.focus.textContent = project.focus || "—";
   detailEl.pipeline.textContent = project.pipeline || "—";
 
-  // thumbnail rail
+  detailEl.frame.classList.add("loading");
+  detailEl.image.removeAttribute("src");
   detailEl.thumbs.innerHTML = "";
-  detail.images.forEach((src, i) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "detail-thumb";
-    btn.innerHTML = `<img src="${encodeURI(src)}" alt="${project.label} ${i + 1}" loading="lazy">`;
-    btn.addEventListener("click", () => showImage(i));
-    btn.addEventListener("error", () => btn.remove(), true);
-    detailEl.thumbs.appendChild(btn);
-  });
 
-  // next-project link
+  document.body.classList.add("detail-open");
+  detailEl.section.setAttribute("aria-hidden", "false");
+  window.scrollTo(0, 0);
+
+  detail.images = await loadProjectImages(project);
+  detailEl.frame.classList.remove("loading");
+
+  if (!detail.images.length) {
+    detailEl.frame.style.background = "linear-gradient(160deg, #241d15, #0e0d0c 70%)";
+    detailEl.image.removeAttribute("src");
+  } else {
+    detail.images.forEach((src, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "detail-thumb";
+      btn.innerHTML = `<img src="${encodeURI(src)}" alt="${project.label} ${i + 1}" loading="lazy">`;
+      btn.addEventListener("click", () => showImage(i));
+      detailEl.thumbs.appendChild(btn);
+    });
+    showImage(0);
+  }
+
+  detail.playing = detail.images.length > 1;
+  restartSlideshow();
+
   const currentPos = PROJECTS.findIndex((p) => p.id === id);
   const nextProject = PROJECTS[(currentPos + 1) % PROJECTS.length];
   detailEl.nextProject.innerHTML = `
     <span class="detail-nextproject-label">NEXT</span>
     <a href="#work/${encodeURIComponent(nextProject.id)}">${nextProject.label} →</a>
   `;
-
-  showImage(0);
-  document.body.classList.add("detail-open");
-  detailEl.section.setAttribute("aria-hidden", "false");
-  window.scrollTo(0, 0);
-  restartSlideshow();
 }
 
 function closeDetail() {
@@ -264,6 +315,7 @@ function closeDetail() {
 
 function showImage(i) {
   const n = detail.images.length;
+  if (!n) return;
   detail.index = ((i % n) + n) % n;
   detailEl.image.src = encodeURI(detail.images[detail.index]);
   detailEl.image.alt = `${detail.project.label} ${detail.index + 1}`;
@@ -271,10 +323,6 @@ function showImage(i) {
   [...detailEl.thumbs.children].forEach((el, idx) =>
     el.classList.toggle("active", idx === detail.index)
   );
-
-  detailEl.image.addEventListener("error", () => {
-    detailEl.frame.style.background = "linear-gradient(160deg, #241d15, #0e0d0c 70%)";
-  }, { once: true });
 }
 
 function stepImage(dir) {
