@@ -8,20 +8,30 @@ const IMAGE_ROOT = 'images/Personal/';
 // 확장자 자동 감지 순서 (대소문자 포함)
 const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'PNG', 'JPG', 'JPEG', 'WEBP'];
 
-// 그리드에 들어갈 9개 프로젝트: 10 -> 02 순서, 2(큰줄)/3(중간줄)/3(중간줄)/1(작은줄)
-// size: 'large' x2, 'medium' x3+3, 'small' x1  ← 반드시 이 개수를 지켜야 피라미드가 유지됩니다.
-// ※ 04, 06, 09 폴더명은 대화 중 정확히 확인되지 않아 임시값입니다.
-//    실제 저장소의 images/Personal/ 하위 폴더명(대소문자까지 동일)으로 바꿔주세요.
-const PROJECTS = [
-  { id: '10Desert',    title: 'Desert',    size: 'large'  },
-  { id: '09Gate',       title: 'Gate',       size: 'large'  }, // TODO: 실제 폴더명 확인
-  { id: '08Trebuchet',  title: 'Trebuchet',  size: 'medium' },
-  { id: '07Alley',      title: 'Alley',      size: 'medium' },
-  { id: '06Project',    title: 'Project 06', size: 'medium' }, // TODO: 실제 폴더명 확인
-  { id: '05Computer',   title: 'Computer',   size: 'medium' },
-  { id: '04Project',    title: 'Project 04', size: 'medium' }, // TODO: 실제 폴더명 확인
-  { id: '03Zbrush',     title: 'Zbrush',     size: 'medium' },
-  { id: '02House',      title: 'House',      size: 'small'  },
+// 그리드에 들어갈 9개 프로젝트: 10 -> 02 순서, 행 구성은 2개/3개/3개/1개.
+// 모든 행의 "높이"는 동일(style.css --row-h)하고, 폭만 행 안에서 flex로 나뉜다.
+// narrow:true 로 표시한 타일(06 Pillar)은 같은 줄의 다른 타일보다 폭이 좁게 나온다.
+// ※ 09Gate / 06Pillar / 04SciFiContainer 는 실제 폴더명 대소문자가 대화에서
+//    정확히 확인되지 않아 스크린샷 속 제목을 기준으로 한 추정값입니다.
+//    실제 저장소의 images/Personal/ 하위 폴더명과 정확히 맞춰주세요.
+const ROWS = [
+  [
+    { id: '10Desert',   title: 'Desert',            category: 'Environment' },
+    { id: '09Gate',      title: 'Gate',               category: 'Environment' }, // TODO: 실제 폴더명 확인
+  ],
+  [
+    { id: '08Trebuchet', title: 'Trebuchet',          category: 'Hard Surface' },
+    { id: '07Alley',     title: 'Alley',              category: 'Environment' },
+    { id: '06Pillar',    title: 'Pillar',             category: 'Environment', narrow: true }, // TODO: 실제 폴더명 확인
+  ],
+  [
+    { id: '05Computer',  title: 'Computer',           category: 'Prop' },
+    { id: '04SciFiContainer', title: 'Sci-Fi Container', category: 'Hard Surface' }, // TODO: 실제 폴더명 확인
+    { id: '03Zbrush',    title: 'Zbrush',             category: 'Sculpt' },
+  ],
+  [
+    { id: '02House',     title: 'House',              category: 'Environment' },
+  ],
 ];
 
 // 그리드에서 제외되고 별도 섹션으로 빠지는 University
@@ -74,22 +84,33 @@ async function buildGrid() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
 
-  for (const project of PROJECTS) {
-    const urls = await detectImages(project.id);
-    if (urls.length === 0) continue; // 이미지가 하나도 없으면 건너뜀
+  for (const row of ROWS) {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'grid-row';
 
-    const item = { ...project, urls };
-    state.items.push(item);
+    for (const project of row) {
+      const urls = await detectImages(project.id);
+      if (urls.length === 0) continue; // 이미지가 하나도 없으면 건너뜀
 
-    const tile = document.createElement('div');
-    tile.className = 'tile';
-    tile.dataset.size = project.size;
-    tile.innerHTML = `
-      <img src="${urls[0]}" alt="${project.title}" loading="lazy" />
-      <div class="tile-label"><span class="tile-index">${project.id.replace(/[^0-9]/g,'')}</span>${project.title}</div>
-    `;
-    tile.addEventListener('click', () => openDetail(item));
-    grid.appendChild(tile);
+      const item = { ...project, urls };
+      state.items.push(item);
+
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      if (project.narrow) tile.dataset.narrow = 'true';
+      tile.innerHTML = `
+        <img src="${urls[0]}" alt="${project.title}" loading="lazy" />
+        <span class="tile-index">${project.id.replace(/[^0-9]/g, '')}</span>
+        <div class="tile-label">
+          <span class="tile-title">${project.title}</span>
+          <span class="tile-category">${project.category || ''}</span>
+        </div>
+      `;
+      tile.addEventListener('click', () => openDetail(item));
+      rowEl.appendChild(tile);
+    }
+
+    if (rowEl.children.length > 0) grid.appendChild(rowEl);
   }
 }
 
