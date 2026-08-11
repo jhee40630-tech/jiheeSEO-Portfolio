@@ -1,196 +1,251 @@
 /* =========================================================
-   설정: 실제 저장소 폴더명에 맞춰 이 배열만 수정하면 됩니다.
-   경로 구조: images/Personal/<id>/1.ext, 2.ext, 3.ext ...
+   PROJECTS — 여기 배열 하나만 수정하면 사이트 전체가 바뀝니다.
+   base: images 폴더 기준 실제 경로 (Personal 폴더 포함)
+   ※ count/ext 는 적을 필요 없습니다 — 브라우저가 자동으로
+     1.png → 1.jpg → 1.jpeg → 1.webp → 1.PNG ... 순서로 찾고,
+     더 이상 찾을 수 없는 지점에서 자동으로 멈춥니다.
    ========================================================= */
-
-const IMAGE_ROOT = 'images/Personal/';
-
-// 확장자 자동 감지 순서 (대소문자 포함)
-const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'PNG', 'JPG', 'JPEG', 'WEBP'];
-
-// 그리드에 들어갈 9개 프로젝트: 10 -> 02 순서, 행 구성은 2개/3개/3개/1개.
-// 모든 행의 "높이"는 동일(style.css --row-h)하고, 폭만 행 안에서 flex로 나뉜다.
-// narrow:true 로 표시한 타일(06 Pillar)은 같은 줄의 다른 타일보다 폭이 좁게 나온다.
-// ※ 09Gate / 06Pillar / 04SciFiContainer 는 실제 폴더명 대소문자가 대화에서
-//    정확히 확인되지 않아 스크린샷 속 제목을 기준으로 한 추정값입니다.
-//    실제 저장소의 images/Personal/ 하위 폴더명과 정확히 맞춰주세요.
-const ROWS = [
-  [
-    { id: '10Desert',   title: 'Desert',            category: 'Environment' },
-    { id: '09Gate',      title: 'Gate',               category: 'Environment' }, // TODO: 실제 폴더명 확인
-  ],
-  [
-    { id: '08Trebuchet', title: 'Trebuchet',          category: 'Hard Surface' },
-    { id: '07Alley',     title: 'Alley',              category: 'Environment' },
-    { id: '06Pillar',    title: 'Pillar',             category: 'Environment', narrow: true }, // TODO: 실제 폴더명 확인
-  ],
-  [
-    { id: '05Computer',  title: 'Computer',           category: 'Prop' },
-    { id: '04SciFiContainer', title: 'Sci-Fi Container', category: 'Hard Surface' }, // TODO: 실제 폴더명 확인
-    { id: '03Zbrush',    title: 'Zbrush',             category: 'Sculpt' },
-  ],
-  [
-    { id: '02House',     title: 'House',              category: 'Environment' },
-  ],
+const PROJECTS = [
+  { id: "01University",         label: "University",         category: "Environment", desc: "캠퍼스 건축물을 하드서페이스 모델링으로 재구성한 프로젝트.", role: "Modeling / Lighting", scope: "Personal", focus: "Architecture", pipeline: "Blender · Substance" },
+  { id: "02House",               label: "House",               category: "Environment", desc: "주거 공간의 구조와 채광을 스터디한 씬.", role: "Modeling / Texturing", scope: "Personal", focus: "Interior", pipeline: "Blender · Substance" },
+  { id: "03Zbrush",               label: "Zbrush",               category: "Sculpt",      desc: "유기적 형태 스컬프팅 연습 시리즈.", role: "Sculpting", scope: "Personal", focus: "Organic Form", pipeline: "ZBrush · KeyShot" },
+  { id: "04Sci-fi Container",     label: "Sci-fi Container",     category: "Hard Surface",desc: "SF 세계관의 컨테이너 구조물 디자인.", role: "Modeling / Lookdev", scope: "Personal", focus: "Hard Surface", pipeline: "Blender · Substance" },
+  { id: "05Computer",             label: "Computer",             category: "Prop",        desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.", role: "Modeling / Texturing", scope: "Personal", focus: "Prop Design", pipeline: "Blender · Substance" },
+  { id: "06Pillar",               label: "Pillar",               category: "Environment", desc: "고대 건축 기둥의 마모와 질감을 재현.", role: "Sculpting / Texturing", scope: "Personal", focus: "Weathering", pipeline: "ZBrush · Substance" },
+  { id: "07Alley",                label: "Alley",                category: "Environment", desc: "좁은 골목의 분위기와 조명을 다룬 씬.", role: "Modeling / Lighting", scope: "Personal", focus: "Mood & Lighting", pipeline: "Blender · Substance" },
+  { id: "08Trebuchet",            label: "Trebuchet",            category: "Hard Surface",desc: "투석기 메커니즘을 기능적으로 모델링.", role: "Modeling", scope: "Personal", focus: "Mechanical", pipeline: "Blender" },
+  { id: "09Gate",                 label: "Gate",                 category: "Environment", desc: "관문 구조물의 스케일과 디테일 스터디.", role: "Modeling / Lookdev", scope: "Personal", focus: "Architecture", pipeline: "Blender · Substance" },
+  { id: "10Desert",               label: "Desert",               category: "Environment", desc: "사막 지형의 라이팅과 대기 표현.", role: "Environment / Lighting", scope: "Personal", focus: "Atmosphere", pipeline: "Blender · World Machine" },
 ];
 
-// 그리드에서 제외되고 별도 섹션으로 빠지는 University
-const UNIVERSITY = { id: '01University', title: 'University' };
+// images/ 폴더 바로 아래에 Personal 폴더가 있는 실제 구조를 반영
+const IMAGE_ROOT = "images/Personal";
+const EXTENSIONS = ["png", "jpg", "jpeg", "webp", "PNG", "JPG", "JPEG"];
+const MAX_PROBE = 60; // 폴더당 최대 탐색 장수 (안전 상한)
 
-/* =========================================================
-   이미지 존재 여부 / 확장자 자동 탐색 유틸
-   ========================================================= */
+function projectBase(id) {
+  return `${IMAGE_ROOT}/${id}`;
+}
 
-// 특정 폴더의 n번째 이미지 URL을 확장자를 바꿔가며 시도해서 찾는다.
-// 성공하면 실제로 로드된 URL을 resolve, 전부 실패하면 null을 resolve.
-function findImageUrl(folder, n) {
+/** 파일 하나가 실제로 로드되는지 확인 (Promise) */
+function probeImage(url) {
   return new Promise((resolve) => {
-    let i = 0;
-    const tryNext = () => {
-      if (i >= EXTENSIONS.length) { resolve(null); return; }
-      const url = `${IMAGE_ROOT}${folder}/${n}.${EXTENSIONS[i]}`;
-      const img = new Image();
-      img.onload = () => resolve(url);
-      img.onerror = () => { i++; tryNext(); };
-      img.src = url;
-    };
-    tryNext();
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
   });
 }
 
-// 1번부터 순서대로 시도해서 더 이상 찾을 수 없는 지점에서 멈추고
-// 실제 존재하는 이미지 URL 배열을 반환한다 (개수를 코드에 적을 필요 없음).
-async function detectImages(folder, { limit = 60 } = {}) {
+/** n번 이미지에 대해 확장자를 순서대로 시도, 성공한 URL 반환 (없으면 null) */
+async function resolveImageUrl(base, n) {
+  for (const ext of EXTENSIONS) {
+    const url = `${base}/${n}.${ext}`;
+    // eslint-disable-next-line no-await-in-loop
+    if (await probeImage(url)) return url;
+  }
+  return null;
+}
+
+/** 프로젝트 폴더 안의 이미지 전체를 순서대로 탐색해서 URL 배열 반환 */
+async function resolveProjectImages(id) {
+  const base = projectBase(id);
   const urls = [];
-  for (let n = 1; n <= limit; n++) {
-    const url = await findImageUrl(folder, n);
+  for (let n = 1; n <= MAX_PROBE; n++) {
+    // eslint-disable-next-line no-await-in-loop
+    const url = await resolveImageUrl(base, n);
     if (!url) break;
     urls.push(url);
   }
   return urls;
 }
 
-/* =========================================================
-   렌더링
-   ========================================================= */
-
-const state = {
-  items: [],      // [{ id, title, urls }]
-  current: null,  // 현재 상세페이지에서 보고 있는 item
-  slideIdx: 0,
-};
-
-async function buildGrid() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-
-  for (const row of ROWS) {
-    const rowEl = document.createElement('div');
-    rowEl.className = 'grid-row';
-
-    for (const project of row) {
-      const urls = await detectImages(project.id);
-      if (urls.length === 0) continue; // 이미지가 하나도 없으면 건너뜀
-
-      const item = { ...project, urls };
-      state.items.push(item);
-
-      const tile = document.createElement('div');
-      tile.className = 'tile';
-      if (project.narrow) tile.dataset.narrow = 'true';
-      tile.innerHTML = `
-        <img src="${urls[0]}" alt="${project.title}" loading="lazy" />
-        <span class="tile-index">${project.id.replace(/[^0-9]/g, '')}</span>
-        <div class="tile-label">
-          <span class="tile-title">${project.title}</span>
-          <span class="tile-category">${project.category || ''}</span>
-        </div>
-      `;
-      tile.addEventListener('click', () => openDetail(item));
-      rowEl.appendChild(tile);
-    }
-
-    if (rowEl.children.length > 0) grid.appendChild(rowEl);
+/* cache so we only probe each project once */
+const imageCache = new Map();
+function getProjectImages(id) {
+  if (!imageCache.has(id)) {
+    imageCache.set(id, resolveProjectImages(id));
   }
+  return imageCache.get(id);
 }
 
-async function buildUniversity() {
-  const wrap = document.getElementById('university-feature');
-  const urls = await detectImages(UNIVERSITY.id);
-  if (urls.length === 0) return;
+/* ===================== GRID ===================== */
+const grid = document.getElementById("grid");
 
-  const item = { ...UNIVERSITY, urls };
-  state.items.push(item);
+function buildGrid() {
+  grid.innerHTML = "";
+  PROJECTS.forEach((p, i) => {
+    const tile = document.createElement("a");
+    tile.href = `#work/${p.id}`;
+    tile.className = "tile loading";
+    tile.dataset.i = i;
+    tile.innerHTML = `
+      <div class="tile-overlay">
+        <span class="tile-index">${String(i + 1).padStart(2, "0")}</span>
+        <span class="tile-name">${p.label}</span>
+        <span class="tile-cat">${p.category}</span>
+      </div>
+    `;
+    tile.addEventListener("click", (e) => {
+      e.preventDefault();
+      openDetail(p.id);
+      history.pushState(null, "", `#work/${p.id}`);
+    });
+    grid.appendChild(tile);
 
-  wrap.innerHTML = `<img src="${urls[0]}" alt="${UNIVERSITY.title}" loading="lazy" />`;
-  wrap.addEventListener('click', () => openDetail(item));
+    getProjectImages(p.id).then((urls) => {
+      tile.classList.remove("loading");
+      if (urls.length === 0) {
+        tile.classList.add("is-placeholder");
+        tile.insertAdjacentHTML(
+          "afterbegin",
+          `<span class="placeholder-path">${projectBase(p.id)}/1.*</span>`
+        );
+        return;
+      }
+      const img = document.createElement("img");
+      img.src = urls[0];
+      img.alt = p.label;
+      tile.prepend(img);
+    });
+  });
 }
 
-/* =========================================================
-   상세페이지 (슬라이드 + 정보패널)
-   ========================================================= */
+/* hero image: probe extensions too */
+async function setHeroImage() {
+  const hero = document.getElementById("hero-img");
+  const base = hero.dataset.base;
+  const url = await resolveImageUrl(base, 1);
+  if (url) hero.src = url;
+}
 
-const detailEl = document.getElementById('detail');
-const slideImg = document.getElementById('slide-img');
-const slideCounter = document.getElementById('slide-counter');
-const detailTitle = document.getElementById('detail-title');
-const detailId = document.getElementById('detail-id');
-const detailThumbs = document.getElementById('detail-thumbs');
+/* ===================== DETAIL PAGE ===================== */
+const detail = document.getElementById("detail");
+const detailFrame = document.getElementById("detail-frame");
+const detailImg = document.getElementById("detail-img");
+const detailCount = document.getElementById("detail-count");
+const detailThumbs = document.getElementById("detail-thumbs");
+const detailPlay = document.getElementById("detail-play");
+const detailClose = document.getElementById("detail-close");
+const detailPrev = document.getElementById("detail-prev");
+const detailNext = document.getElementById("detail-next");
+const detailNextProject = document.getElementById("detail-next-project");
+const detailNextProjectName = document.getElementById("detail-next-project-name");
 
-function openDetail(item) {
-  state.current = item;
-  state.slideIdx = 0;
-  detailTitle.textContent = item.title;
-  detailId.textContent = item.id;
+let currentProject = null;
+let currentImages = [];
+let currentIndex = 0;
+let slideTimer = null;
+let isPlaying = true;
 
-  detailThumbs.innerHTML = item.urls
-    .map((u, i) => `<img src="${u}" data-i="${i}" alt="${item.title} ${i + 1}" />`)
-    .join('');
-  detailThumbs.querySelectorAll('img').forEach((img) => {
-    img.addEventListener('click', () => showSlide(Number(img.dataset.i)));
+async function openDetail(id) {
+  const project = PROJECTS.find((p) => p.id === id);
+  if (!project) return;
+  currentProject = project;
+  currentIndex = 0;
+
+  document.getElementById("detail-category").textContent = project.category;
+  document.getElementById("detail-title").textContent = project.label;
+  document.getElementById("detail-desc").textContent = project.desc;
+  document.getElementById("detail-role").textContent = project.role;
+  document.getElementById("detail-scope").textContent = project.scope;
+  document.getElementById("detail-focus").textContent = project.focus;
+  document.getElementById("detail-pipeline").textContent = project.pipeline;
+
+  const nextIdx = (PROJECTS.indexOf(project) + 1) % PROJECTS.length;
+  const nextProject = PROJECTS[nextIdx];
+  detailNextProjectName.textContent = nextProject.label;
+  detailNextProject.onclick = (e) => {
+    e.preventDefault();
+    openDetail(nextProject.id);
+    history.pushState(null, "", `#work/${nextProject.id}`);
+  };
+
+  detail.classList.add("is-open");
+  detail.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  detailFrame.classList.add("loading");
+  detailThumbs.innerHTML = "";
+  currentImages = await getProjectImages(id);
+  detailFrame.classList.remove("loading");
+
+  if (currentImages.length === 0) {
+    detailImg.removeAttribute("src");
+    detailCount.textContent = "0 / 0";
+    return;
+  }
+
+  currentImages.forEach((url, i) => {
+    const t = document.createElement("img");
+    t.src = url;
+    t.alt = `${project.label} ${i + 1}`;
+    t.addEventListener("click", () => showImage(i));
+    detailThumbs.appendChild(t);
   });
 
-  showSlide(0);
-  detailEl.hidden = false;
-  document.body.style.overflow = 'hidden';
+  showImage(0);
+  startSlideshow();
+}
+
+function showImage(i) {
+  if (!currentImages.length) return;
+  currentIndex = (i + currentImages.length) % currentImages.length;
+  detailImg.src = currentImages[currentIndex];
+  detailCount.textContent = `${currentIndex + 1} / ${currentImages.length}`;
+  [...detailThumbs.children].forEach((el, idx) =>
+    el.classList.toggle("is-active", idx === currentIndex)
+  );
+}
+
+function startSlideshow() {
+  stopSlideshow();
+  if (!isPlaying) return;
+  slideTimer = setInterval(() => showImage(currentIndex + 1), 4500);
+}
+function stopSlideshow() {
+  if (slideTimer) clearInterval(slideTimer);
+  slideTimer = null;
 }
 
 function closeDetail() {
-  detailEl.hidden = true;
-  document.body.style.overflow = '';
+  detail.classList.remove("is-open");
+  detail.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  stopSlideshow();
+  if (location.hash.startsWith("#work/")) {
+    history.pushState(null, "", "#works");
+  }
 }
 
-function showSlide(i) {
-  const item = state.current;
-  if (!item) return;
-  const total = item.urls.length;
-  state.slideIdx = (i + total) % total;
-  slideImg.src = item.urls[state.slideIdx];
-  slideImg.alt = `${item.title} ${state.slideIdx + 1}`;
-  slideCounter.textContent = `${state.slideIdx + 1} / ${total}`;
-  detailThumbs.querySelectorAll('img').forEach((img, idx) => {
-    img.classList.toggle('active', idx === state.slideIdx);
-  });
+detailClose.addEventListener("click", closeDetail);
+detailPrev.addEventListener("click", () => { showImage(currentIndex - 1); startSlideshow(); });
+detailNext.addEventListener("click", () => { showImage(currentIndex + 1); startSlideshow(); });
+detailPlay.addEventListener("click", () => {
+  isPlaying = !isPlaying;
+  detailPlay.textContent = isPlaying ? "❚❚" : "▶";
+  if (isPlaying) startSlideshow(); else stopSlideshow();
+});
+
+window.addEventListener("keydown", (e) => {
+  if (!detail.classList.contains("is-open")) return;
+  if (e.key === "Escape") closeDetail();
+  if (e.key === "ArrowRight") { showImage(currentIndex + 1); startSlideshow(); }
+  if (e.key === "ArrowLeft") { showImage(currentIndex - 1); startSlideshow(); }
+});
+
+/* deep-link support: #work/07Alley */
+function handleHash() {
+  const m = location.hash.match(/^#work\/(.+)$/);
+  if (m) {
+    openDetail(decodeURIComponent(m[1]));
+  } else {
+    closeDetail();
+  }
 }
+window.addEventListener("hashchange", handleHash);
 
-document.getElementById('detail-close').addEventListener('click', closeDetail);
-document.getElementById('slide-prev').addEventListener('click', () => showSlide(state.slideIdx - 1));
-document.getElementById('slide-next').addEventListener('click', () => showSlide(state.slideIdx + 1));
-document.addEventListener('keydown', (e) => {
-  if (detailEl.hidden) return;
-  if (e.key === 'Escape') closeDetail();
-  if (e.key === 'ArrowLeft') showSlide(state.slideIdx - 1);
-  if (e.key === 'ArrowRight') showSlide(state.slideIdx + 1);
-});
-detailEl.addEventListener('click', (e) => {
-  if (e.target === detailEl) closeDetail();
-});
-
-/* =========================================================
-   초기화
-   ========================================================= */
-
-(async function init() {
-  await buildGrid();
-  await buildUniversity();
-})();
+/* ===================== INIT ===================== */
+buildGrid();
+setHeroImage();
+handleHash();
