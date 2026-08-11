@@ -1,49 +1,111 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>WORKS</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jihee Seo — 3D Portfolio</title>
+<meta name="description" content="Jihee Seo — 3D Art & Environment Portfolio">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=5" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <header class="site-header">
-    <h1 class="site-title">WORKS</h1>
-    <p class="site-sub">Personal Portfolio</p>
-  </header>
+<!-- ===== NAV ===== -->
+<header class="nav" id="nav">
+  <a href="#top" class="nav-mark">JIHEE SEO</a>
+  <nav class="nav-links">
+    <a href="#works">WORKS</a>
+    <a href="#about">ABOUT</a>
+    <a href="#contact">CONTACT</a>
+  </nav>
+</header>
 
-  <main>
-    <!-- 10 -> 02, 2/3/3/1 피라미드 그리드 -->
-    <section id="grid" class="grid" aria-label="프로젝트 목록"></section>
+<!-- ===== HERO ===== -->
+<section class="hero" id="top">
+  <div class="hero-bg">
+    <img id="hero-img" data-base="images/Personal/07Alley" alt="">
+    <div class="hero-scrim"></div>
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">3D ART / ENVIRONMENT / PROPS</p>
+    <h1 class="hero-title">JIHEE&nbsp;SEO<span class="hero-title-accent">.</span></h1>
+    <p class="hero-sub">디테일과 분위기를 다루는 3D 아티스트의 작업 기록</p>
+    <a href="#works" class="hero-scroll">SCROLL <span>↓</span></a>
+  </div>
+</section>
 
-    <!-- University 단독 섹션 -->
-    <section class="university-section">
-      <h2 class="university-label">University</h2>
-      <div id="university-feature" class="university-feature"></div>
-    </section>
-  </main>
-
-  <!-- 상세페이지(오버레이): 슬라이드 + 정보패널 -->
-  <div id="detail" class="detail" hidden>
-    <button class="detail-close" id="detail-close" aria-label="닫기">✕</button>
-
-    <div class="detail-slide">
-      <button class="slide-arrow slide-prev" id="slide-prev" aria-label="이전 이미지">‹</button>
-      <img id="slide-img" class="slide-img" src="" alt="" />
-      <button class="slide-arrow slide-next" id="slide-next" aria-label="다음 이미지">›</button>
-      <div class="slide-counter" id="slide-counter"></div>
+<!-- ===== WORKS ===== -->
+<main>
+  <section class="works" id="works">
+    <div class="section-head">
+      <h2>WORKS</h2>
+      <p>선택한 프로젝트를 클릭하면 상세 페이지로 이동합니다</p>
     </div>
+    <div class="grid" id="grid"><!-- injected by script.js --></div>
+  </section>
 
-    <aside class="detail-info">
-      <h3 id="detail-title"></h3>
-      <p id="detail-id" class="detail-id"></p>
-      <div id="detail-thumbs" class="detail-thumbs"></div>
-    </aside>
+  <section class="about" id="about">
+    <div class="about-inner">
+      <p class="about-eyebrow">ABOUT</p>
+      <h2>공간과 사물의 질감을 3D로 재해석합니다.</h2>
+      <p class="about-body">
+        건축적 구조물부터 유기적인 스컬프트까지, 다양한 스케일과 재질을 다루며
+        작업마다 고유한 파이프라인을 구축합니다. ZBrush를 이용한 스컬프팅, 하드서페이스 모델링,
+        그리고 라이팅 연출까지 — 각 프로젝트는 하나의 짧은 세계관으로 완결됩니다.
+      </p>
+    </div>
+  </section>
+</main>
+
+<!-- ===== DETAIL OVERLAY ===== -->
+<section class="detail" id="detail" aria-hidden="true">
+  <button class="detail-close" id="detail-close" aria-label="닫기">✕</button>
+
+  <div class="detail-viewer">
+    <button class="detail-nav detail-prev" id="detail-prev" aria-label="이전 이미지">‹</button>
+    <div class="detail-frame" id="detail-frame">
+      <img id="detail-img" alt="">
+    </div>
+    <button class="detail-nav detail-next" id="detail-next" aria-label="다음 이미지">›</button>
+
+    <div class="detail-controls">
+      <button id="detail-play" aria-label="재생/일시정지">❚❚</button>
+      <span class="detail-count" id="detail-count">1 / 1</span>
+    </div>
   </div>
 
-  <script src="script.js?v=5"></script>
+  <aside class="detail-side">
+    <p class="detail-category" id="detail-category"></p>
+    <h2 class="detail-title" id="detail-title"></h2>
+    <p class="detail-desc" id="detail-desc"></p>
+
+    <dl class="detail-meta">
+      <div><dt>ROLE</dt><dd id="detail-role"></dd></div>
+      <div><dt>SCOPE</dt><dd id="detail-scope"></dd></div>
+      <div><dt>FOCUS</dt><dd id="detail-focus"></dd></div>
+      <div><dt>PIPELINE</dt><dd id="detail-pipeline"></dd></div>
+    </dl>
+
+    <div class="detail-thumbs" id="detail-thumbs"></div>
+
+    <a href="#" class="detail-next-project" id="detail-next-project">
+      <span>다음 프로젝트</span>
+      <strong id="detail-next-project-name"></strong>
+      <span class="arrow">→</span>
+    </a>
+  </aside>
+</section>
+
+<footer class="footer" id="contact">
+  <div class="footer-inner">
+    <p class="footer-mark">JIHEE SEO</p>
+    <a href="mailto:hello@example.com" class="footer-email">hello@example.com</a>
+    <p class="footer-copy">© 2026 Jihee Seo. All works shown are original.</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
