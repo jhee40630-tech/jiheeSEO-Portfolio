@@ -27,13 +27,14 @@ const ALL_PROJECTS = [...PROJECTS, UNIVERSITY];
 // images/ 폴더 바로 아래에 Personal 폴더가 있는 실제 구조를 반영
 const IMAGE_ROOT = "images/Personal";
 const EXTENSIONS = ["png", "jpg", "jpeg", "webp", "PNG", "JPG", "JPEG"];
+const VIDEO_EXTENSIONS = ["mp4", "webm", "mov", "MP4", "WEBM", "MOV"];
 const MAX_PROBE = 60; // 폴더당 최대 탐색 장수 (안전 상한)
 
 function projectBase(id) {
   return `${IMAGE_ROOT}/${id}`;
 }
 
-/** 파일 하나가 실제로 로드되는지 확인 (Promise) */
+/** 파일 하나가 실제로 이미지로 로드되는지 확인 (Promise) */
 function probeImage(url) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -43,7 +44,34 @@ function probeImage(url) {
   });
 }
 
-/** n번 이미지에 대해 확장자를 순서대로 시도, 성공한 URL 반환 (없으면 null) */
+/** 파일 하나가 실제로 동영상으로 로드되는지 확인 (Promise) */
+function probeVideo(url) {
+  return new Promise((resolve) => {
+    const v = document.createElement("video");
+    v.preload = "metadata";
+    v.onloadedmetadata = () => resolve(true);
+    v.onerror = () => resolve(false);
+    v.src = url;
+  });
+}
+
+/** n번 슬롯에 대해 이미지 확장자를 먼저 시도하고, 없으면 동영상 확장자를 시도한다.
+    성공하면 { url, type: "image" | "video" } 를 반환하고, 없으면 null. */
+async function resolveMediaUrl(base, n) {
+  for (const ext of EXTENSIONS) {
+    const url = `${base}/${n}.${ext}`;
+    // eslint-disable-next-line no-await-in-loop
+    if (await probeImage(url)) return { url, type: "image" };
+  }
+  for (const ext of VIDEO_EXTENSIONS) {
+    const url = `${base}/${n}.${ext}`;
+    // eslint-disable-next-line no-await-in-loop
+    if (await probeVideo(url)) return { url, type: "video" };
+  }
+  return null;
+}
+
+/** 이전 버전과의 호환용 — 이미지 URL 문자열만 필요할 때 사용 (썸네일 등) */
 async function resolveImageUrl(base, n) {
   for (const ext of EXTENSIONS) {
     const url = `${base}/${n}.${ext}`;
@@ -53,17 +81,18 @@ async function resolveImageUrl(base, n) {
   return null;
 }
 
-/** 프로젝트 폴더 안의 이미지 전체를 순서대로 탐색해서 URL 배열 반환 */
+/** 프로젝트 폴더 안의 이미지/동영상 전체를 순서대로 탐색해서
+    { url, type } 배열로 반환 (사진과 동영상이 섞여 있어도 됨) */
 async function resolveProjectImages(id) {
   const base = projectBase(id);
-  const urls = [];
+  const media = [];
   for (let n = 1; n <= MAX_PROBE; n++) {
     // eslint-disable-next-line no-await-in-loop
-    const url = await resolveImageUrl(base, n);
-    if (!url) break;
-    urls.push(url);
+    const item = await resolveMediaUrl(base, n);
+    if (!item) break;
+    media.push(item);
   }
-  return urls;
+  return media;
 }
 
 /* cache so we only probe each project once */
@@ -150,9 +179,10 @@ function buildGrid() {
       tile.classList.remove("loading");
       let mainUrl = thu1;
       if (!mainUrl) {
-        // thu1이 없으면 기존처럼 번호 매긴 첫 이미지로 대체
-        const urls = await getProjectImages(p.id);
-        mainUrl = urls[0] || null;
+        // thu1이 없으면 기존처럼 번호 매긴 첫 "이미지"로 대체 (동영상은 썸네일로 못 씀)
+        const media = await getProjectImages(p.id);
+        const firstImage = media.find((m) => m.type === "image");
+        mainUrl = firstImage ? firstImage.url : null;
       }
       if (!mainUrl) {
         tile.classList.add("is-placeholder");
@@ -171,12 +201,23 @@ function buildGrid() {
   });
 }
 
-/* hero image: probe extensions too */
+/* hero banner: 이미지/동영상 확장자를 모두 탐색해서, 찾은 쪽만 보여준다.
+   (현재 10Desert/1.mp4 처럼 동영상이 있으면 자동으로 동영상 배너가 됨) */
 async function setHeroImage() {
-  const hero = document.getElementById("hero-img");
-  const base = hero.dataset.base;
-  const url = await resolveImageUrl(base, 1);
-  if (url) hero.src = url;
+  const heroVideo = document.getElementById("hero-video");
+  const heroImg = document.getElementById("hero-img");
+  const base = heroImg.dataset.base;
+  const media = await resolveMediaUrl(base, 1);
+  if (!media) return;
+  if (media.type === "video") {
+    heroVideo.src = media.url;
+    heroVideo.style.display = "block";
+    heroImg.style.display = "none";
+  } else {
+    heroImg.src = media.url;
+    heroImg.style.display = "block";
+    heroVideo.style.display = "none";
+  }
 }
 
 /* ===================== UNIVERSITY 단독 섹션 ===================== */
@@ -194,8 +235,9 @@ async function buildUniversitySpotlight() {
   const { thu1, thu2 } = await getProjectThumbs(UNIVERSITY.id);
   let mainUrl = thu1;
   if (!mainUrl) {
-    const urls = await getProjectImages(UNIVERSITY.id);
-    mainUrl = urls[0] || null;
+    const media = await getProjectImages(UNIVERSITY.id);
+    const firstImage = media.find((m) => m.type === "image");
+    mainUrl = firstImage ? firstImage.url : null;
   }
   if (!mainUrl) {
     tile.classList.add("is-placeholder");
@@ -214,6 +256,7 @@ async function buildUniversitySpotlight() {
 const detail = document.getElementById("detail");
 const detailFrame = document.getElementById("detail-frame");
 const detailImg = document.getElementById("detail-img");
+const detailVideo = document.getElementById("detail-video");
 const detailCount = document.getElementById("detail-count");
 const detailThumbs = document.getElementById("detail-thumbs");
 const detailPlay = document.getElementById("detail-play");
@@ -263,14 +306,27 @@ async function openDetail(id) {
 
   if (currentImages.length === 0) {
     detailImg.removeAttribute("src");
+    detailVideo.pause();
+    detailVideo.removeAttribute("src");
+    detailImg.style.display = "none";
+    detailVideo.style.display = "none";
     detailCount.textContent = "0 / 0";
     return;
   }
 
-  currentImages.forEach((url, i) => {
-    const t = document.createElement("img");
-    t.src = url;
-    t.alt = `${project.label} ${i + 1}`;
+  currentImages.forEach((item, i) => {
+    let t;
+    if (item.type === "video") {
+      t = document.createElement("video");
+      t.src = item.url;
+      t.muted = true;
+      t.preload = "metadata";
+      t.playsInline = true;
+    } else {
+      t = document.createElement("img");
+      t.src = item.url;
+      t.alt = `${project.label} ${i + 1}`;
+    }
     t.addEventListener("click", () => showImage(i));
     detailThumbs.appendChild(t);
   });
@@ -282,7 +338,23 @@ async function openDetail(id) {
 function showImage(i) {
   if (!currentImages.length) return;
   currentIndex = (i + currentImages.length) % currentImages.length;
-  detailImg.src = currentImages[currentIndex];
+  const item = currentImages[currentIndex];
+
+  if (item.type === "video") {
+    detailImg.style.display = "none";
+    detailImg.removeAttribute("src");
+    detailVideo.style.display = "block";
+    detailVideo.src = item.url;
+    detailVideo.currentTime = 0;
+    detailVideo.play().catch(() => {});
+  } else {
+    detailVideo.pause();
+    detailVideo.style.display = "none";
+    detailVideo.removeAttribute("src");
+    detailImg.style.display = "block";
+    detailImg.src = item.url;
+  }
+
   detailCount.textContent = `${currentIndex + 1} / ${currentImages.length}`;
   [...detailThumbs.children].forEach((el, idx) =>
     el.classList.toggle("is-active", idx === currentIndex)
@@ -304,6 +376,7 @@ function closeDetail() {
   detail.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
   stopSlideshow();
+  detailVideo.pause();
   if (location.hash.startsWith("#work/")) {
     history.pushState(null, "", "#works");
   }
