@@ -23,6 +23,9 @@ const IMAGE_ROOT = "images/Personal";
 const EXTENSIONS = ["png", "jpg", "jpeg", "webp", "PNG", "JPG", "JPEG"];
 const MAX_PROBE = 60; // 폴더당 최대 탐색 장수 (안전 상한)
 
+// University는 모자이크 그리드에 넣지 않고, "University" 라벨 아래 별도 이미지로 뺍니다.
+const FEATURED_ID = "01University";
+
 function projectBase(id) {
   return `${IMAGE_ROOT}/${id}`;
 }
@@ -81,8 +84,9 @@ function projectNumber(id) {
 function buildGrid() {
   grid.innerHTML = "";
   // 타일 크기(모자이크 모양)는 그대로 두고, 그 자리에 들어가는 프로젝트만 뒤집습니다.
-  // → 큰 타일(맨 위)에는 번호가 큰 프로젝트(10Desert)가, 아래로 갈수록 작은 번호(01University)가 오게 됩니다.
-  const displayOrder = [...PROJECTS].reverse();
+  // → 큰 타일(맨 위)에는 번호가 큰 프로젝트(10Desert)가, 아래로 갈수록 작은 번호가 오게 됩니다.
+  // University(01)는 별도 섹션이므로 그리드에서 제외합니다.
+  const displayOrder = PROJECTS.filter((p) => p.id !== FEATURED_ID).reverse();
   displayOrder.forEach((p, i) => {
     const tile = document.createElement("a");
     tile.href = `#work/${p.id}`;
@@ -126,6 +130,23 @@ async function setHeroImage() {
   const base = hero.dataset.base;
   const url = await resolveImageUrl(base, 1);
   if (url) hero.src = url;
+}
+
+/* standalone University spotlight (separate from the grid) */
+async function setFeaturedUniversity() {
+  const frame = document.getElementById("feature-university-frame");
+  const img = document.getElementById("feature-university-img");
+  if (!frame || !img) return;
+  const urls = await getProjectImages(FEATURED_ID);
+  if (urls.length === 0) {
+    frame.classList.add("is-placeholder");
+    frame.insertAdjacentHTML(
+      "afterbegin",
+      `<span class="placeholder-path">${projectBase(FEATURED_ID)}/1.*</span>`
+    );
+    return;
+  }
+  img.src = urls[0];
 }
 
 /* ===================== DETAIL PAGE ===================== */
@@ -257,4 +278,5 @@ window.addEventListener("hashchange", handleHash);
 /* ===================== INIT ===================== */
 buildGrid();
 setHeroImage();
+setFeaturedUniversity();
 handleHash();
