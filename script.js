@@ -72,16 +72,25 @@ function getProjectImages(id) {
 /* ===================== GRID ===================== */
 const grid = document.getElementById("grid");
 
+/** id 맨 앞의 숫자(예: "10Desert" -> "10")를 타일 배지로 사용 */
+function projectNumber(id) {
+  const m = id.match(/^(\d+)/);
+  return m ? m[1] : "";
+}
+
 function buildGrid() {
   grid.innerHTML = "";
-  PROJECTS.forEach((p, i) => {
+  // 타일 크기(모자이크 모양)는 그대로 두고, 그 자리에 들어가는 프로젝트만 뒤집습니다.
+  // → 큰 타일(맨 위)에는 번호가 큰 프로젝트(10Desert)가, 아래로 갈수록 작은 번호(01University)가 오게 됩니다.
+  const displayOrder = [...PROJECTS].reverse();
+  displayOrder.forEach((p, i) => {
     const tile = document.createElement("a");
     tile.href = `#work/${p.id}`;
     tile.className = "tile loading";
     tile.dataset.i = i;
     tile.innerHTML = `
       <div class="tile-overlay">
-        <span class="tile-index">${String(i + 1).padStart(2, "0")}</span>
+        <span class="tile-index">${projectNumber(p.id)}</span>
         <span class="tile-name">${p.label}</span>
         <span class="tile-cat">${p.category}</span>
       </div>
