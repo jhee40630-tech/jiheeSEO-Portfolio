@@ -75,6 +75,41 @@ function getProjectImages(id) {
   return imageCache.get(id);
 }
 
+/* ===================== HOVER THUMBNAILS (thu1 / thu2) =====================
+   각 프로젝트 폴더 안에 thu1.*, thu2.* 파일을 넣으면:
+   - 평소엔 thu1 이미지가 보이고
+   - 마우스를 올리면 thu2 이미지로 바뀌었다가, 마우스를 떼면 다시 thu1로 돌아옴
+   thu1/thu2가 없는 폴더는 기존처럼 1.* 이미지를 그대로 사용(하위 호환). */
+async function resolveThumb(base, name) {
+  for (const ext of EXTENSIONS) {
+    const url = `${base}/${name}.${ext}`;
+    // eslint-disable-next-line no-await-in-loop
+    if (await probeImage(url)) return url;
+  }
+  return null;
+}
+
+const thumbCache = new Map();
+function getProjectThumbs(id) {
+  if (!thumbCache.has(id)) {
+    const base = projectBase(id);
+    thumbCache.set(
+      id,
+      Promise.all([resolveThumb(base, "thu1"), resolveThumb(base, "thu2")]).then(
+        ([thu1, thu2]) => ({ thu1, thu2 })
+      )
+    );
+  }
+  return thumbCache.get(id);
+}
+
+/** tile(또는 spotlight tile) 엘리먼트에 hover 시 thu1 -> thu2 전환 동작을 연결 */
+function attachHoverThumb(tile, img, mainUrl, thu2Url) {
+  if (!thu2Url) return; // thu2가 없으면 hover 전환 없이 mainUrl 고정
+  tile.addEventListener("mouseenter", () => { img.src = thu2Url; });
+  tile.addEventListener("mouseleave", () => { img.src = mainUrl; });
+}
+
 /* ===================== GRID ===================== */
 const grid = document.getElementById("grid");
 
@@ -99,20 +134,27 @@ function buildGrid() {
     });
     grid.appendChild(tile);
 
-    getProjectImages(p.id).then((urls) => {
+    getProjectThumbs(p.id).then(async ({ thu1, thu2 }) => {
       tile.classList.remove("loading");
-      if (urls.length === 0) {
+      let mainUrl = thu1;
+      if (!mainUrl) {
+        // thu1이 없으면 기존처럼 번호 매긴 첫 이미지로 대체
+        const urls = await getProjectImages(p.id);
+        mainUrl = urls[0] || null;
+      }
+      if (!mainUrl) {
         tile.classList.add("is-placeholder");
         tile.insertAdjacentHTML(
           "afterbegin",
-          `<span class="placeholder-path">${projectBase(p.id)}/1.*</span>`
+          `<span class="placeholder-path">${projectBase(p.id)}/thu1.* (또는 1.*)</span>`
         );
         return;
       }
       const img = document.createElement("img");
-      img.src = urls[0];
+      img.src = mainUrl;
       img.alt = p.label;
       tile.prepend(img);
+      attachHoverThumb(tile, img, mainUrl, thu2);
     });
   });
 }
@@ -137,17 +179,23 @@ async function buildUniversitySpotlight() {
     history.pushState(null, "", `#work/${UNIVERSITY.id}`);
   });
 
-  const urls = await getProjectImages(UNIVERSITY.id);
-  if (urls.length === 0) {
+  const { thu1, thu2 } = await getProjectThumbs(UNIVERSITY.id);
+  let mainUrl = thu1;
+  if (!mainUrl) {
+    const urls = await getProjectImages(UNIVERSITY.id);
+    mainUrl = urls[0] || null;
+  }
+  if (!mainUrl) {
     tile.classList.add("is-placeholder");
     tile.insertAdjacentHTML(
       "afterbegin",
-      `<span class="placeholder-path">${projectBase(UNIVERSITY.id)}/1.*</span>`
+      `<span class="placeholder-path">${projectBase(UNIVERSITY.id)}/thu1.* (또는 1.*)</span>`
     );
     return;
   }
-  img.src = urls[0];
+  img.src = mainUrl;
   img.alt = UNIVERSITY.label;
+  attachHoverThumb(tile, img, mainUrl, thu2);
 }
 
 /* ===================== DETAIL PAGE ===================== */
