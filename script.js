@@ -1,5 +1,7 @@
 /* =========================================================
-   PROJECTS — 여기 배열 하나만 수정하면 사이트 전체가 바뀝니다.
+   PROJECTS — 그리드에 들어가는 9개. 순서: 10,9,8,7,6,5,4,2,3
+   (스케치 기준: 아래로 갈수록 작은 숫자, 마지막 두 칸만 2 -> 3 순서로 바뀜)
+   UNIVERSITY — 그리드에 넣지 않고 별도 "University" 섹션으로 분리.
    base: images 폴더 기준 실제 경로 (Personal 폴더 포함)
    ※ count/ext 는 적을 필요 없습니다 — 브라우저가 자동으로
      1.png → 1.jpg → 1.jpeg → 1.webp → 1.PNG ... 순서로 찾고,
@@ -13,10 +15,14 @@ const PROJECTS = [
   { id: "06Pillar",               label: "Pillar",               category: "Environment", desc: "고대 건축 기둥의 마모와 질감을 재현.", role: "Sculpting / Texturing", scope: "Personal", focus: "Weathering", pipeline: "ZBrush · Substance" },
   { id: "05Computer",             label: "Computer",             category: "Prop",        desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.", role: "Modeling / Texturing", scope: "Personal", focus: "Prop Design", pipeline: "Blender · Substance" },
   { id: "04Sci-fi Container",     label: "Sci-fi Container",     category: "Hard Surface",desc: "SF 세계관의 컨테이너 구조물 디자인.", role: "Modeling / Lookdev", scope: "Personal", focus: "Hard Surface", pipeline: "Blender · Substance" },
-  { id: "03Zbrush",               label: "Zbrush",               category: "Sculpt",      desc: "유기적 형태 스컬프팅 연습 시리즈.", role: "Sculpting", scope: "Personal", focus: "Organic Form", pipeline: "ZBrush · KeyShot" },
   { id: "02House",               label: "House",               category: "Environment", desc: "주거 공간의 구조와 채광을 스터디한 씬.", role: "Modeling / Texturing", scope: "Personal", focus: "Interior", pipeline: "Blender · Substance" },
-  { id: "01University",         label: "University",         category: "Environment", desc: "캠퍼스 건축물을 하드서페이스 모델링으로 재구성한 프로젝트.", role: "Modeling / Lighting", scope: "Personal", focus: "Architecture", pipeline: "Blender · Substance" },
+  { id: "03Zbrush",               label: "Zbrush",               category: "Sculpt",      desc: "유기적 형태 스컬프팅 연습 시리즈.", role: "Sculpting", scope: "Personal", focus: "Organic Form", pipeline: "ZBrush · KeyShot" },
 ];
+
+const UNIVERSITY = { id: "01University", label: "University", category: "Environment", desc: "캠퍼스 건축물을 하드서페이스 모델링으로 재구성한 프로젝트.", role: "Modeling / Lighting", scope: "Personal", focus: "Architecture", pipeline: "Blender · Substance" };
+
+// 상세페이지 조회 / "다음 프로젝트" 순환에는 University까지 포함해서 사용
+const ALL_PROJECTS = [...PROJECTS, UNIVERSITY];
 
 // images/ 폴더 바로 아래에 Personal 폴더가 있는 실제 구조를 반영
 const IMAGE_ROOT = "images/Personal";
@@ -119,6 +125,31 @@ async function setHeroImage() {
   if (url) hero.src = url;
 }
 
+/* ===================== UNIVERSITY 단독 섹션 ===================== */
+async function buildUniversitySpotlight() {
+  const tile = document.getElementById("university-tile");
+  const img = document.getElementById("university-img");
+  if (!tile || !img) return;
+
+  tile.addEventListener("click", (e) => {
+    e.preventDefault();
+    openDetail(UNIVERSITY.id);
+    history.pushState(null, "", `#work/${UNIVERSITY.id}`);
+  });
+
+  const urls = await getProjectImages(UNIVERSITY.id);
+  if (urls.length === 0) {
+    tile.classList.add("is-placeholder");
+    tile.insertAdjacentHTML(
+      "afterbegin",
+      `<span class="placeholder-path">${projectBase(UNIVERSITY.id)}/1.*</span>`
+    );
+    return;
+  }
+  img.src = urls[0];
+  img.alt = UNIVERSITY.label;
+}
+
 /* ===================== DETAIL PAGE ===================== */
 const detail = document.getElementById("detail");
 const detailFrame = document.getElementById("detail-frame");
@@ -139,7 +170,7 @@ let slideTimer = null;
 let isPlaying = true;
 
 async function openDetail(id) {
-  const project = PROJECTS.find((p) => p.id === id);
+  const project = ALL_PROJECTS.find((p) => p.id === id);
   if (!project) return;
   currentProject = project;
   currentIndex = 0;
@@ -152,8 +183,8 @@ async function openDetail(id) {
   document.getElementById("detail-focus").textContent = project.focus;
   document.getElementById("detail-pipeline").textContent = project.pipeline;
 
-  const nextIdx = (PROJECTS.indexOf(project) + 1) % PROJECTS.length;
-  const nextProject = PROJECTS[nextIdx];
+  const nextIdx = (ALL_PROJECTS.indexOf(project) + 1) % ALL_PROJECTS.length;
+  const nextProject = ALL_PROJECTS[nextIdx];
   detailNextProjectName.textContent = nextProject.label;
   detailNextProject.onclick = (e) => {
     e.preventDefault();
@@ -248,4 +279,5 @@ window.addEventListener("hashchange", handleHash);
 /* ===================== INIT ===================== */
 buildGrid();
 setHeroImage();
+buildUniversitySpotlight();
 handleHash();
