@@ -1,380 +1,251 @@
 /* =========================================================
-   PROJECTS — one entry per /images/ subfolder.
-
-   id       : exact folder name under /images/  (case-sensitive on
-              GitHub Pages! must match the on-disk folder name exactly —
-              this is the #1 cause of broken thumbnails)
-   label    : title shown on the tile and detail page
-   category : small tag shown above the title (ENVIRONMENT / PROP / SCULPT ...)
-   desc / role / scope / focus / pipeline : detail-page text fields
-
-   NOTE: you no longer need to specify a file extension or an image
-   count. The code below tries 1.png, 1.jpg, 1.jpeg, 1.webp (etc.)
-   automatically, and keeps counting 2, 3, 4... until a number has
-   no matching file in ANY extension — that's how it finds the
-   right files and the right length by itself.
+   PROJECTS — 여기 배열 하나만 수정하면 사이트 전체가 바뀝니다.
+   base: images 폴더 기준 실제 경로 (Personal 폴더 포함)
+   ※ count/ext 는 적을 필요 없습니다 — 브라우저가 자동으로
+     1.png → 1.jpg → 1.jpeg → 1.webp → 1.PNG ... 순서로 찾고,
+     더 이상 찾을 수 없는 지점에서 자동으로 멈춥니다.
    ========================================================= */
 const PROJECTS = [
-  {
-    id: "01University", label: "University", category: "ENVIRONMENT",
-    desc: "대학교를 배경으로 한 환경 아트 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Full Pipeline",
-    scope: "Environment Art · Lighting · Scene Composition",
-    focus: "공간감 있는 캠퍼스 환경 연출",
-    pipeline: "3ds Max → ZBrush → RizomUV → Substance Painter → UE5",
-  },
-  {
-    id: "02House", label: "House", category: "ENVIRONMENT",
-    desc: "주택을 소재로 한 환경 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Full Pipeline",
-    scope: "Environment Art · Material Authoring · Lighting",
-    focus: "생활감 있는 실내외 공간 표현",
-    pipeline: "3ds Max → ZBrush → RizomUV → Substance Painter → UE5",
-  },
-  {
-    id: "03Zbrush", label: "ZBrush Sculpt", category: "SCULPT",
-    desc: "ZBrush 하이폴리 스컬핑 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Sculpting",
-    scope: "High-poly Sculpt · Surface Detail",
-    focus: "자연물의 표면 디테일 표현",
-    pipeline: "ZBrush → RizomUV → Substance Painter",
-  },
-  {
-    id: "04Sci-fi Container", label: "Sci-fi Container", category: "PROP",
-    desc: "SF 컨테이너 프롭 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Full Pipeline",
-    scope: "Hard-surface Modeling · Texturing",
-    focus: "기능성이 느껴지는 SF 소품 디자인",
-    pipeline: "3ds Max → Substance Painter → Marmoset → UE5",
-  },
-  {
-    id: "05Computer", label: "Computer", category: "PROP",
-    desc: "레트로 컴퓨터 프롭 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Full Pipeline",
-    scope: "Hard-surface Modeling · Texturing · Set Dressing",
-    focus: "시대감 있는 소품과 주변 연출",
-    pipeline: "3ds Max → Substance Painter → Marmoset",
-  },
-  {
-    id: "06Pillar", label: "Pillar", category: "PROP",
-    desc: "석조 기둥 프롭 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Full Pipeline",
-    scope: "Modeling · Sculpting · Texturing",
-    focus: "고대 건축 장식 디테일 표현",
-    pipeline: "3ds Max → ZBrush → Substance Painter",
-  },
-  {
-    id: "07Alley", label: "Alley", category: "ENVIRONMENT",
-    desc: "골목길을 배경으로 한 환경 아트 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Full Pipeline",
-    scope: "Environment Art · Lighting · Scene Composition",
-    focus: "네온과 그래피티가 있는 도심 뒷골목 분위기 연출",
-    pipeline: "3ds Max → ZBrush → RizomUV → Substance Painter → UE5",
-  },
-  {
-    id: "08Trebuchet", label: "Trebuchet", category: "PROP",
-    desc: "투석기(트레뷰셋) 프롭 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Full Pipeline",
-    scope: "Modeling · Texturing · Set Dressing",
-    focus: "중세 공성 병기의 구조와 마모 표현",
-    pipeline: "3ds Max → Substance Painter → UE5",
-  },
-  {
-    id: "09Gate", label: "Gate", category: "ENVIRONMENT",
-    desc: "성문/게이트를 배경으로 한 환경 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Full Pipeline",
-    scope: "Environment Art · Sculpting · Lighting",
-    focus: "위압감 있는 진입로 공간 구성",
-    pipeline: "3ds Max → ZBrush → RizomUV → Substance Painter → UE5",
-  },
-  {
-    id: "10Desert", label: "Desert", category: "ENVIRONMENT",
-    desc: "사막 환경 작업입니다. 여기에 작업 설명을 채워 넣으세요.",
-    role: "Full Pipeline",
-    scope: "Environment Art · Terrain · Lighting",
-    focus: "광활한 사막 지형과 대기 표현",
-    pipeline: "3ds Max → ZBrush → RizomUV → Substance Painter → UE5",
-  },
+  { id: "01University",         label: "University",         category: "Environment", desc: "캠퍼스 건축물을 하드서페이스 모델링으로 재구성한 프로젝트.", role: "Modeling / Lighting", scope: "Personal", focus: "Architecture", pipeline: "Blender · Substance" },
+  { id: "02House",               label: "House",               category: "Environment", desc: "주거 공간의 구조와 채광을 스터디한 씬.", role: "Modeling / Texturing", scope: "Personal", focus: "Interior", pipeline: "Blender · Substance" },
+  { id: "03Zbrush",               label: "Zbrush",               category: "Sculpt",      desc: "유기적 형태 스컬프팅 연습 시리즈.", role: "Sculpting", scope: "Personal", focus: "Organic Form", pipeline: "ZBrush · KeyShot" },
+  { id: "04Sci-fi Container",     label: "Sci-fi Container",     category: "Hard Surface",desc: "SF 세계관의 컨테이너 구조물 디자인.", role: "Modeling / Lookdev", scope: "Personal", focus: "Hard Surface", pipeline: "Blender · Substance" },
+  { id: "05Computer",             label: "Computer",             category: "Prop",        desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.", role: "Modeling / Texturing", scope: "Personal", focus: "Prop Design", pipeline: "Blender · Substance" },
+  { id: "06Pillar",               label: "Pillar",               category: "Environment", desc: "고대 건축 기둥의 마모와 질감을 재현.", role: "Sculpting / Texturing", scope: "Personal", focus: "Weathering", pipeline: "ZBrush · Substance" },
+  { id: "07Alley",                label: "Alley",                category: "Environment", desc: "좁은 골목의 분위기와 조명을 다룬 씬.", role: "Modeling / Lighting", scope: "Personal", focus: "Mood & Lighting", pipeline: "Blender · Substance" },
+  { id: "08Trebuchet",            label: "Trebuchet",            category: "Hard Surface",desc: "투석기 메커니즘을 기능적으로 모델링.", role: "Modeling", scope: "Personal", focus: "Mechanical", pipeline: "Blender" },
+  { id: "09Gate",                 label: "Gate",                 category: "Environment", desc: "관문 구조물의 스케일과 디테일 스터디.", role: "Modeling / Lookdev", scope: "Personal", focus: "Architecture", pipeline: "Blender · Substance" },
+  { id: "10Desert",               label: "Desert",               category: "Environment", desc: "사막 지형의 라이팅과 대기 표현.", role: "Environment / Lighting", scope: "Personal", focus: "Atmosphere", pipeline: "Blender · World Machine" },
 ];
 
-/* extensions tried, in this order, for every numbered image file */
-const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "PNG", "JPG", "JPEG"];
-/* safety cap — stop looking once a project reaches this many images
-   even if files somehow kept going (protects against infinite loops) */
-const MAX_IMAGES_PER_PROJECT = 40;
+// images/ 폴더 바로 아래에 Personal 폴더가 있는 실제 구조를 반영
+const IMAGE_ROOT = "images/Personal";
+const EXTENSIONS = ["png", "jpg", "jpeg", "webp", "PNG", "JPG", "JPEG"];
+const MAX_PROBE = 60; // 폴더당 최대 탐색 장수 (안전 상한)
 
-/* grid rhythm for the mosaic — first entry is always the feature tile */
-const PATTERN = ["feature", "wide", "narrow", "narrow", "wide", "wide", "narrow", "narrow", "wide", "narrow"];
+function projectBase(id) {
+  return `${IMAGE_ROOT}/${id}`;
+}
 
-/* cache so we don't re-probe the same project twice */
-const imageCache = new Map();
-
-/** Try loading a single URL, resolving true/false instead of throwing. */
-function testImage(src) {
+/** 파일 하나가 실제로 로드되는지 확인 (Promise) */
+function probeImage(url) {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => resolve(true);
     img.onerror = () => resolve(false);
-    img.src = encodeURI(src);
+    img.src = url;
   });
 }
 
-/** Find which extension (if any) exists for images/<id>/<index>.<ext> */
-async function resolveExtension(basePathNoExt) {
-  for (const ext of IMAGE_EXTENSIONS) {
+/** n번 이미지에 대해 확장자를 순서대로 시도, 성공한 URL 반환 (없으면 null) */
+async function resolveImageUrl(base, n) {
+  for (const ext of EXTENSIONS) {
+    const url = `${base}/${n}.${ext}`;
     // eslint-disable-next-line no-await-in-loop
-    if (await testImage(`${basePathNoExt}.${ext}`)) return ext;
+    if (await probeImage(url)) return url;
   }
   return null;
 }
 
-/**
- * Auto-detect every image belonging to a project: tries 1, 2, 3...
- * across all known extensions, and stops at the first number that
- * has no match in any extension.
- */
-async function loadProjectImages(project) {
-  if (imageCache.has(project.id)) return imageCache.get(project.id);
-
-  const found = [];
-  for (let i = 1; i <= MAX_IMAGES_PER_PROJECT; i++) {
+/** 프로젝트 폴더 안의 이미지 전체를 순서대로 탐색해서 URL 배열 반환 */
+async function resolveProjectImages(id) {
+  const base = projectBase(id);
+  const urls = [];
+  for (let n = 1; n <= MAX_PROBE; n++) {
     // eslint-disable-next-line no-await-in-loop
-    const ext = await resolveExtension(`images/${project.id}/${i}`);
-    if (!ext) break;
-    found.push(`images/${project.id}/${i}.${ext}`);
+    const url = await resolveImageUrl(base, n);
+    if (!url) break;
+    urls.push(url);
   }
-
-  imageCache.set(project.id, found);
-  return found;
+  return urls;
 }
 
-/* =========================================================
-   HOME — build the works mosaic
-   ========================================================= */
-function buildMosaic() {
-  const mosaic = document.getElementById("mosaic");
-  const countEl = document.getElementById("work-count");
-  if (!mosaic) return;
+/* cache so we only probe each project once */
+const imageCache = new Map();
+function getProjectImages(id) {
+  if (!imageCache.has(id)) {
+    imageCache.set(id, resolveProjectImages(id));
+  }
+  return imageCache.get(id);
+}
 
-  mosaic.innerHTML = "";
+/* ===================== GRID ===================== */
+const grid = document.getElementById("grid");
 
-  PROJECTS.forEach((project, i) => {
-    const shape = PATTERN[i % PATTERN.length];
-
+function buildGrid() {
+  grid.innerHTML = "";
+  PROJECTS.forEach((p, i) => {
     const tile = document.createElement("a");
-    tile.className = "tile loading " + shape;
-    tile.href = `#work/${encodeURIComponent(project.id)}`;
-
+    tile.href = `#work/${p.id}`;
+    tile.className = "tile loading";
+    tile.dataset.i = i;
     tile.innerHTML = `
-      <span class="tile-index">${String(i + 1).padStart(2, "0")}</span>
-      <div class="tile-scrim"></div>
-      <div class="tile-caption">
-        <span class="tile-name">${project.label}</span>
-        <span class="tile-path">/${project.id}/</span>
+      <div class="tile-overlay">
+        <span class="tile-index">${String(i + 1).padStart(2, "0")}</span>
+        <span class="tile-name">${p.label}</span>
+        <span class="tile-cat">${p.category}</span>
       </div>
     `;
-    mosaic.appendChild(tile);
+    tile.addEventListener("click", (e) => {
+      e.preventDefault();
+      openDetail(p.id);
+      history.pushState(null, "", `#work/${p.id}`);
+    });
+    grid.appendChild(tile);
 
-    // resolve the cover image asynchronously, then fill it in (or fall
-    // back to a clear placeholder if the folder has no readable image)
-    loadProjectImages(project).then((images) => {
-      if (!images.length) {
-        tile.classList.remove("loading");
-        tile.classList.add("placeholder");
-        const label = document.createElement("span");
-        label.className = "placeholder-label";
-        label.textContent = `${project.label}\nimages/${project.id}/ 폴더에\n이미지를 찾지 못했습니다`;
-        tile.prepend(label);
+    getProjectImages(p.id).then((urls) => {
+      tile.classList.remove("loading");
+      if (urls.length === 0) {
+        tile.classList.add("is-placeholder");
+        tile.insertAdjacentHTML(
+          "afterbegin",
+          `<span class="placeholder-path">${projectBase(p.id)}/1.*</span>`
+        );
         return;
       }
       const img = document.createElement("img");
-      img.src = encodeURI(images[0]);
-      img.alt = project.label;
-      img.loading = "lazy";
-      tile.insertBefore(img, tile.firstChild.nextSibling);
-      tile.classList.remove("loading");
+      img.src = urls[0];
+      img.alt = p.label;
+      tile.prepend(img);
     });
   });
-
-  if (countEl) countEl.textContent = `${PROJECTS.length} PROJECTS`;
 }
 
-function initHeroFallback() {
-  const heroImg = document.querySelector(".hero-img");
-  if (!heroImg) return;
-  const base = heroImg.dataset.base || "images/01University/1";
-  let i = 0;
-  const tryNext = () => {
-    if (i >= IMAGE_EXTENSIONS.length) {
-      heroImg.remove();
-      document.querySelector(".hero-media").style.background =
-        "linear-gradient(160deg, #241d15, #0e0d0c 70%)";
-      return;
-    }
-    heroImg.src = encodeURI(`${base}.${IMAGE_EXTENSIONS[i]}`);
-    i++;
-  };
-  heroImg.addEventListener("error", tryNext);
-  tryNext();
+/* hero image: probe extensions too */
+async function setHeroImage() {
+  const hero = document.getElementById("hero-img");
+  const base = hero.dataset.base;
+  const url = await resolveImageUrl(base, 1);
+  if (url) hero.src = url;
 }
 
-function initNavScroll() {
-  const nav = document.getElementById("nav");
-  if (!nav) return;
-  const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 10 || document.body.classList.contains("detail-open"));
-  onScroll();
-  window.addEventListener("scroll", onScroll, { passive: true });
-}
+/* ===================== DETAIL PAGE ===================== */
+const detail = document.getElementById("detail");
+const detailFrame = document.getElementById("detail-frame");
+const detailImg = document.getElementById("detail-img");
+const detailCount = document.getElementById("detail-count");
+const detailThumbs = document.getElementById("detail-thumbs");
+const detailPlay = document.getElementById("detail-play");
+const detailClose = document.getElementById("detail-close");
+const detailPrev = document.getElementById("detail-prev");
+const detailNext = document.getElementById("detail-next");
+const detailNextProject = document.getElementById("detail-next-project");
+const detailNextProjectName = document.getElementById("detail-next-project-name");
 
-/* =========================================================
-   DETAIL VIEW — slideshow + info panel for a single project
-   ========================================================= */
-const detail = {
-  project: null,
-  images: [],
-  index: 0,
-  playing: true,
-  timer: null,
-};
-
-const detailEl = {
-  section: document.getElementById("detail"),
-  category: document.getElementById("detail-category"),
-  title: document.getElementById("detail-title"),
-  frame: document.getElementById("detail-frame"),
-  image: document.getElementById("detail-image"),
-  prev: document.getElementById("detail-prev"),
-  next: document.getElementById("detail-next"),
-  play: document.getElementById("detail-play"),
-  desc: document.getElementById("detail-desc"),
-  role: document.getElementById("detail-role"),
-  scope: document.getElementById("detail-scope"),
-  focus: document.getElementById("detail-focus"),
-  pipeline: document.getElementById("detail-pipeline"),
-  thumbs: document.getElementById("detail-thumbs"),
-  nextProject: document.getElementById("detail-nextproject"),
-};
+let currentProject = null;
+let currentImages = [];
+let currentIndex = 0;
+let slideTimer = null;
+let isPlaying = true;
 
 async function openDetail(id) {
   const project = PROJECTS.find((p) => p.id === id);
-  if (!project) { location.hash = "#top"; return; }
+  if (!project) return;
+  currentProject = project;
+  currentIndex = 0;
 
-  detail.project = project;
-  detail.index = 0;
+  document.getElementById("detail-category").textContent = project.category;
+  document.getElementById("detail-title").textContent = project.label;
+  document.getElementById("detail-desc").textContent = project.desc;
+  document.getElementById("detail-role").textContent = project.role;
+  document.getElementById("detail-scope").textContent = project.scope;
+  document.getElementById("detail-focus").textContent = project.focus;
+  document.getElementById("detail-pipeline").textContent = project.pipeline;
 
-  detailEl.category.textContent = project.category;
-  detailEl.title.textContent = project.label;
-  detailEl.desc.textContent = project.desc || "";
-  detailEl.role.textContent = project.role || "—";
-  detailEl.scope.textContent = project.scope || "—";
-  detailEl.focus.textContent = project.focus || "—";
-  detailEl.pipeline.textContent = project.pipeline || "—";
+  const nextIdx = (PROJECTS.indexOf(project) + 1) % PROJECTS.length;
+  const nextProject = PROJECTS[nextIdx];
+  detailNextProjectName.textContent = nextProject.label;
+  detailNextProject.onclick = (e) => {
+    e.preventDefault();
+    openDetail(nextProject.id);
+    history.pushState(null, "", `#work/${nextProject.id}`);
+  };
 
-  detailEl.frame.classList.add("loading");
-  detailEl.image.removeAttribute("src");
-  detailEl.thumbs.innerHTML = "";
+  detail.classList.add("is-open");
+  detail.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
 
-  document.body.classList.add("detail-open");
-  detailEl.section.setAttribute("aria-hidden", "false");
-  window.scrollTo(0, 0);
+  detailFrame.classList.add("loading");
+  detailThumbs.innerHTML = "";
+  currentImages = await getProjectImages(id);
+  detailFrame.classList.remove("loading");
 
-  detail.images = await loadProjectImages(project);
-  detailEl.frame.classList.remove("loading");
-
-  if (!detail.images.length) {
-    detailEl.frame.style.background = "linear-gradient(160deg, #241d15, #0e0d0c 70%)";
-    detailEl.image.removeAttribute("src");
-  } else {
-    detail.images.forEach((src, i) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "detail-thumb";
-      btn.innerHTML = `<img src="${encodeURI(src)}" alt="${project.label} ${i + 1}" loading="lazy">`;
-      btn.addEventListener("click", () => showImage(i));
-      detailEl.thumbs.appendChild(btn);
-    });
-    showImage(0);
+  if (currentImages.length === 0) {
+    detailImg.removeAttribute("src");
+    detailCount.textContent = "0 / 0";
+    return;
   }
 
-  detail.playing = detail.images.length > 1;
-  restartSlideshow();
+  currentImages.forEach((url, i) => {
+    const t = document.createElement("img");
+    t.src = url;
+    t.alt = `${project.label} ${i + 1}`;
+    t.addEventListener("click", () => showImage(i));
+    detailThumbs.appendChild(t);
+  });
 
-  const currentPos = PROJECTS.findIndex((p) => p.id === id);
-  const nextProject = PROJECTS[(currentPos + 1) % PROJECTS.length];
-  detailEl.nextProject.innerHTML = `
-    <span class="detail-nextproject-label">NEXT</span>
-    <a href="#work/${encodeURIComponent(nextProject.id)}">${nextProject.label} →</a>
-  `;
-}
-
-function closeDetail() {
-  document.body.classList.remove("detail-open");
-  detailEl.section.setAttribute("aria-hidden", "true");
-  stopSlideshow();
+  showImage(0);
+  startSlideshow();
 }
 
 function showImage(i) {
-  const n = detail.images.length;
-  if (!n) return;
-  detail.index = ((i % n) + n) % n;
-  detailEl.image.src = encodeURI(detail.images[detail.index]);
-  detailEl.image.alt = `${detail.project.label} ${detail.index + 1}`;
-
-  [...detailEl.thumbs.children].forEach((el, idx) =>
-    el.classList.toggle("active", idx === detail.index)
+  if (!currentImages.length) return;
+  currentIndex = (i + currentImages.length) % currentImages.length;
+  detailImg.src = currentImages[currentIndex];
+  detailCount.textContent = `${currentIndex + 1} / ${currentImages.length}`;
+  [...detailThumbs.children].forEach((el, idx) =>
+    el.classList.toggle("is-active", idx === currentIndex)
   );
 }
 
-function stepImage(dir) {
-  showImage(detail.index + dir);
-  restartSlideshow();
-}
-
-function restartSlideshow() {
+function startSlideshow() {
   stopSlideshow();
-  detailEl.play.textContent = detail.playing ? "⏸" : "▶";
-  if (!detail.playing || detail.images.length <= 1) return;
-  detail.timer = setInterval(() => showImage(detail.index + 1), 4500);
+  if (!isPlaying) return;
+  slideTimer = setInterval(() => showImage(currentIndex + 1), 4500);
 }
 function stopSlideshow() {
-  if (detail.timer) clearInterval(detail.timer);
-  detail.timer = null;
-}
-function togglePlay() {
-  detail.playing = !detail.playing;
-  restartSlideshow();
+  if (slideTimer) clearInterval(slideTimer);
+  slideTimer = null;
 }
 
-function initDetailControls() {
-  detailEl.prev.addEventListener("click", () => stepImage(-1));
-  detailEl.next.addEventListener("click", () => stepImage(1));
-  detailEl.play.addEventListener("click", togglePlay);
-  document.addEventListener("keydown", (e) => {
-    if (!document.body.classList.contains("detail-open")) return;
-    if (e.key === "ArrowLeft") stepImage(-1);
-    if (e.key === "ArrowRight") stepImage(1);
-    if (e.key === "Escape") location.hash = "#top";
-  });
+function closeDetail() {
+  detail.classList.remove("is-open");
+  detail.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  stopSlideshow();
+  if (location.hash.startsWith("#work/")) {
+    history.pushState(null, "", "#works");
+  }
 }
 
-/* =========================================================
-   ROUTER — #work/<id> opens the detail view, anything else closes it
-   ========================================================= */
-function handleRoute() {
-  const hash = location.hash;
-  const match = hash.match(/^#work\/(.+)$/);
-  if (match) {
-    openDetail(decodeURIComponent(match[1]));
+detailClose.addEventListener("click", closeDetail);
+detailPrev.addEventListener("click", () => { showImage(currentIndex - 1); startSlideshow(); });
+detailNext.addEventListener("click", () => { showImage(currentIndex + 1); startSlideshow(); });
+detailPlay.addEventListener("click", () => {
+  isPlaying = !isPlaying;
+  detailPlay.textContent = isPlaying ? "❚❚" : "▶";
+  if (isPlaying) startSlideshow(); else stopSlideshow();
+});
+
+window.addEventListener("keydown", (e) => {
+  if (!detail.classList.contains("is-open")) return;
+  if (e.key === "Escape") closeDetail();
+  if (e.key === "ArrowRight") { showImage(currentIndex + 1); startSlideshow(); }
+  if (e.key === "ArrowLeft") { showImage(currentIndex - 1); startSlideshow(); }
+});
+
+/* deep-link support: #work/07Alley */
+function handleHash() {
+  const m = location.hash.match(/^#work\/(.+)$/);
+  if (m) {
+    openDetail(decodeURIComponent(m[1]));
   } else {
     closeDetail();
   }
 }
+window.addEventListener("hashchange", handleHash);
 
-document.addEventListener("DOMContentLoaded", () => {
-  buildMosaic();
-  initHeroFallback();
-  initNavScroll();
-  initDetailControls();
-  window.addEventListener("hashchange", handleRoute);
-  handleRoute(); // in case the page was loaded directly on a #work/... link
-});
+/* ===================== INIT ===================== */
+buildGrid();
+setHeroImage();
+handleHash();
