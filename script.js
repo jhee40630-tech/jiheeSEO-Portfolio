@@ -96,7 +96,19 @@ function getProjectThumbs(id) {
     thumbCache.set(
       id,
       Promise.all([resolveThumb(base, "thu1"), resolveThumb(base, "thu2")]).then(
-        ([thu1, thu2]) => ({ thu1, thu2 })
+        ([thu1, thu2]) => {
+          // 콘솔(F12)에서 정확히 어떤 경로를 찾다가 실패했는지 바로 확인 가능
+          if (!thu1) {
+            console.warn(
+              `[thumb 없음] ${base}/thu1.(png/jpg/jpeg/webp) 를 찾지 못해 1.* 이미지로 대체합니다. 파일명이 정확히 소문자 "thu1"인지, 경로가 맞는지 확인하세요.`
+            );
+          } else if (!thu2) {
+            console.warn(
+              `[thumb 없음] ${base}/thu2.(png/jpg/jpeg/webp) 를 찾지 못해 마우스오버 전환 없이 thu1로 고정됩니다.`
+            );
+          }
+          return { thu1, thu2 };
+        }
       )
     );
   }
