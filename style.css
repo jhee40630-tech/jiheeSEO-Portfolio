@@ -165,7 +165,10 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   display:flex; flex-direction:column; justify-content:flex-end;
   padding:16px;
   background:linear-gradient(180deg, rgba(14,13,12,0) 45%, rgba(14,13,12,.85) 100%);
+  opacity:0;
+  transition:opacity .3s ease;
 }
+.tile:hover .tile-overlay{opacity:1;}
 .tile-index{
   font-family:var(--f-mono); font-size:10px; letter-spacing:.1em;
   color:var(--rust-soft); margin-bottom:4px;
