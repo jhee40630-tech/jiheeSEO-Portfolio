@@ -43,15 +43,21 @@ main{
   padding: 0 6vw 96px;
 }
 
-/* ============ 그리드: 10 -> 02, 2 / 3 / 3 / 1 피라미드 ============ */
-/* 모든 타일은 동일한 셀 규격을 기준으로만 span이 다르기 때문에
-   타일 크기가 "들쭉날쭉"해지지 않는다. object-fit:cover로
-   실제 이미지 비율과 무관하게 박스 크기를 통일한다. */
+/* ============ 그리드: 10 -> 02, 행 단위(2/3/3/1) 배치 ============ */
+/* 모든 행(row)의 높이가 동일(--row-h)하고, 폭만 행마다 타일 개수에 따라
+   달라진다. 즉 1번째 줄(2개)이든 2·3번째 줄(3개)이든 4번째 줄(1개)이든
+   세로 크기는 항상 같고, 가로 폭만 줄어드는 구조라 "들쭉날쭉"함이 없다.
+   object-fit:cover로 실제 이미지 비율과 무관하게 박스 크기를 통일한다. */
 .grid{
-  display:grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-auto-rows: 120px;
+  display:flex;
+  flex-direction:column;
   gap: var(--gap);
+}
+
+.grid-row{
+  display:flex;
+  gap: var(--gap);
+  height: var(--row-h, clamp(260px, 30vw, 460px));
 }
 
 .tile{
@@ -61,6 +67,9 @@ main{
   background: var(--bg-raised);
   cursor:pointer;
   border:1px solid var(--line);
+  flex: 1 1 0;
+  min-width:0;
+  height:100%;
 }
 .tile img{
   position:absolute;
@@ -72,37 +81,38 @@ main{
 }
 .tile:hover img{ transform: scale(1.04); }
 
+/* 06 Pillar처럼 세로로 긴 소재는 폭을 다른 타일보다 좁게 (flex 값이 작을수록 좁아짐) */
+.tile[data-narrow="true"]{
+  flex: 0.62 1 0;
+}
+
 .tile-label{
   position:absolute;
   left:0; right:0; bottom:0;
   padding: 14px 16px;
   background: linear-gradient(to top, rgba(0,0,0,.75), transparent);
+}
+.tile-title{
+  display:block;
   font-family:'Space Grotesk', sans-serif;
   font-size:0.95rem;
+  font-weight:600;
   letter-spacing:0.02em;
 }
-.tile-index{
+.tile-category{
+  display:block;
+  margin-top:2px;
   color: var(--ink-dim);
+  font-size:0.72rem;
+  letter-spacing:0.03em;
+}
+.tile-index{
+  position:absolute;
+  top:14px; left:16px;
+  color: var(--accent);
   font-size:0.75rem;
-  margin-right:6px;
-}
-
-/* Row 1 — 2개, 큰 타일 (전체 폭의 절반씩, 세로로 큼) */
-.tile[data-size="large"]{
-  grid-column: span 3;
-  grid-row: span 4;
-}
-
-/* Row 2, Row 3 — 3개씩, 중간 타일 (전체 폭의 1/3씩) */
-.tile[data-size="medium"]{
-  grid-column: span 2;
-  grid-row: span 3;
-}
-
-/* Row 4 — 1개, 작은 타일 (전체 폭, 낮은 높이) */
-.tile[data-size="small"]{
-  grid-column: 1 / -1;
-  grid-row: span 2;
+  letter-spacing:0.05em;
+  font-family:'Space Grotesk', sans-serif;
 }
 
 /* ============ University 단독 섹션 ============ */
@@ -231,10 +241,10 @@ main{
 
 /* ============ 반응형 ============ */
 @media (max-width: 860px){
-  .grid{ grid-template-columns: repeat(2, 1fr); grid-auto-rows: 160px; }
-  .tile[data-size="large"]{ grid-column: span 2; grid-row: span 3; }
-  .tile[data-size="medium"]{ grid-column: span 1; grid-row: span 2; }
-  .tile[data-size="small"]{ grid-column: 1 / -1; grid-row: span 2; }
+  .grid{ --row-h: 220px; }
+  .grid-row{ flex-wrap: nowrap; overflow-x:auto; }
+  .tile{ flex: 0 0 78vw; }
+  .tile[data-narrow="true"]{ flex: 0 0 56vw; }
 
   .detail{ grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
   .detail-info{ border-left:none; border-top:1px solid var(--line); padding: 24px; }
