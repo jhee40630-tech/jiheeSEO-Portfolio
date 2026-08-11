@@ -133,9 +133,9 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   cursor:pointer;
   grid-column:span 2; grid-row:span 1;
 }
-/* mosaic sizing rhythm across 10 items
-   — PROJECTS 배열 순서: 10 Desert, 09 Gate, 08 Trebuchet, 07 Alley, 06 Pillar,
-     05 Computer, 04 Sci-fi Container, 03 Zbrush, 02 House, 01 University
+/* mosaic sizing rhythm across 9 items (University는 그리드 밖, 별도 섹션)
+   — 순서: 10 Desert, 09 Gate, 08 Trebuchet, 07 Alley, 06 Pillar,
+           05 Computer, 04 Sci-fi Container, 02 House, 03 Zbrush
    — 모든 타일이 grid-row:span 2로 동일해서 줄마다 "높이"가 전부 같다.
      폭(grid-column span)만 줄마다 달라지고, 한 줄의 span 합은 항상 6(=전체 폭). */
 .tile[data-i="0"]{grid-column:span 3; grid-row:span 2;} /* 10 Desert — 1번째 줄, 반 */
@@ -145,9 +145,8 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 .tile[data-i="4"]{grid-column:span 1; grid-row:span 2;} /* 06 Pillar — 기둥이라 폭만 좁게 */
 .tile[data-i="5"]{grid-column:span 2; grid-row:span 2;} /* 05 Computer */
 .tile[data-i="6"]{grid-column:span 2; grid-row:span 2;} /* 04 Sci-fi Container */
-.tile[data-i="7"]{grid-column:span 2; grid-row:span 2;} /* 03 Zbrush */
-.tile[data-i="8"]{grid-column:span 3; grid-row:span 2;} /* 02 House */
-.tile[data-i="9"]{grid-column:span 3; grid-row:span 2;} /* 01 University */
+.tile[data-i="7"]{grid-column:span 2; grid-row:span 2;} /* 02 House */
+.tile[data-i="8"]{grid-column:span 6; grid-row:span 2;} /* 03 Zbrush — 마지막 줄, 혼자 전체 폭 */
 @media(max-width:900px){
   .tile, .tile[data-i]{grid-column:span 1 !important; grid-row:span 1 !important;}
 }
@@ -196,6 +195,38 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   animation:shimmer 1.4s ease-in-out infinite;
 }
 @keyframes shimmer{ 0%{background-position:200% 0;} 100%{background-position:-50% 0;} }
+
+/* ===== UNIVERSITY (그리드에서 분리된 단독 섹션) ===== */
+.university-spotlight{margin-top:10px;}
+.university-spotlight-title{
+  font-family:var(--f-display); font-weight:600;
+  font-size:clamp(20px, 2.6vw, 30px); text-transform:uppercase;
+  letter-spacing:.02em;
+  padding-bottom:16px; margin-bottom:10px;
+  border-bottom:1px solid var(--line);
+}
+.university-spotlight-tile{
+  position:relative; display:block; overflow:hidden;
+  background:var(--panel);
+  border:1px solid var(--line);
+  cursor:pointer;
+  height:32vw; min-height:320px;
+}
+@media(max-width:900px){ .university-spotlight-tile{height:60vw; min-height:260px;} }
+.university-spotlight-tile img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  transition:transform .6s cubic-bezier(.2,.7,.2,1), filter .4s;
+  filter:grayscale(.35) brightness(.82);
+}
+.university-spotlight-tile:hover img{transform:scale(1.04); filter:grayscale(0) brightness(.95);}
+.university-spotlight-tile.is-placeholder{
+  background:repeating-linear-gradient(135deg, var(--panel) 0 10px, #211f1a 10px 20px);
+}
+.university-spotlight-tile.is-placeholder .placeholder-path{
+  position:absolute; top:16px; left:16px; right:16px;
+  font-family:var(--f-mono); font-size:10px; color:var(--text-faint);
+  word-break:break-all;
+}
 
 /* ===== ABOUT ===== */
 .about{padding:12vh 5vw 16vh; border-top:1px solid var(--line);}
