@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
@@ -17,7 +17,7 @@
   <a href="#top" class="nav-mark">JIHEE SEO</a>
   <nav class="nav-links">
     <a href="#works">WORKS</a>
-    <a href="#about">ABOUT</a>
+    <a href="#about" id="nav-about">ABOUT</a>
     <a href="#contact">CONTACT</a>
   </nav>
 </header>
@@ -48,23 +48,10 @@
 
     <div class="university-spotlight">
       <h3 class="university-spotlight-title">University</h3>
-      <a href="#work/01University" class="university-spotlight-tile" id="university-tile">
-        <img id="university-img" alt="University">
-      </a>
+      <div class="university-duo" id="university-duo"><!-- injected by script.js --></div>
     </div>
   </section>
 
-  <section class="about" id="about">
-    <div class="about-inner">
-      <p class="about-eyebrow">ABOUT</p>
-      <h2>공간과 사물의 질감을 3D로 재해석합니다.</h2>
-      <p class="about-body">
-        건축적 구조물부터 유기적인 스컬프트까지, 다양한 스케일과 재질을 다루며
-        작업마다 고유한 파이프라인을 구축합니다. ZBrush를 이용한 스컬프팅, 하드서페이스 모델링,
-        그리고 라이팅 연출까지 — 각 프로젝트는 하나의 짧은 세계관으로 완결됩니다.
-      </p>
-    </div>
-  </section>
 </main>
 
 <!-- ===== DETAIL OVERLAY ===== -->
@@ -107,6 +94,71 @@
   </aside>
 </section>
 
+<!-- ===== ABOUT PAGE OVERLAY ===== -->
+<section class="about-page" id="about" aria-hidden="true">
+  <div class="about-page-inner">
+    <div class="about-page-top">
+      <button class="about-back" id="about-back">← Back</button>
+      <span class="about-page-label">JIHEE SEO · PROFILE</span>
+    </div>
+
+    <div class="about-header">
+      <div class="about-header-text">
+        <p class="about-eyebrow">3D Environment Artist</p>
+        <h1 class="about-name">JIHEE&nbsp;<span class="about-name-accent">SEO</span></h1>
+        <p class="about-contact">SEJUHE@NAVER.COM</p>
+      </div>
+      <div class="about-photo">
+        <img src="images/Personal/about/1.png" alt="Jihee Seo">
+      </div>
+    </div>
+
+    <div class="about-tools">
+      <p class="about-label">TOOLS</p>
+      <p class="about-tools-list">3ds Max · ZBrush · Substance Painter · Substance Designer · Marmoset · Photoshop · Unity</p>
+    </div>
+
+    <div class="about-section">
+      <p class="about-section-label">EDUCATION</p>
+      <div class="about-entry">
+        <div class="about-entry-year">2022</div>
+        <div class="about-entry-body">
+          <h3>Kyung Hee University</h3>
+          <p class="about-entry-sub">College of Fine Arts — Department of Painting</p>
+          <ul>
+            <li>경희대학교 미술학부 회화전공 (2017.3 – 2022.2)</li>
+            <li>중등학교 정교사 2급 미술 자격증</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <p class="about-section-label">CAREER</p>
+      <div class="about-entry">
+        <div class="about-entry-year">2022–2023</div>
+        <div class="about-entry-body">
+          <h3>Incheon Design High School</h3>
+          <p class="about-entry-sub">Art Teacher</p>
+          <ul>
+            <li>인천디자인고등학교 (2022.08.19 – 2023.02.28)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="about-entry">
+        <div class="about-entry-year">2023–2025</div>
+        <div class="about-entry-body">
+          <h3>Samsan Middle School</h3>
+          <p class="about-entry-sub">Art Teacher</p>
+          <ul>
+            <li>삼산중학교 (2023.03.01 – 2025.03.01)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer class="footer" id="contact">
   <div class="footer-inner">
     <p class="footer-mark">JIHEE SEO</p>
@@ -115,6 +167,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=6"></script>
+<script src="script.js?v=7"></script>
 </body>
 </html>

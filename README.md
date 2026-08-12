@@ -1,6 +1,6 @@
 # Jihee Seo Portfolio — 설정 가이드
 
-## 1. 폴더 구조 (중요 — 이번에 고친 부분)
+## 1. 폴더 구조 (중요)
 
 실제 이미지 경로가 `images/01University` 가 아니라 **`images/Personal/01University`** 인 것으로
 확인되어, 코드를 이 구조에 맞춰 수정했습니다. 저장소 최상단 기준 구조는 다음과 같아야 합니다:
@@ -13,10 +13,19 @@
 ├─ README.md
 └─ images/
    └─ Personal/
+      ├─ about/
+      │   └─ 1.png                        ← ABOUT 페이지 프로필 사진
       ├─ 01University/
-      │   ├─ 1.png (또는 .jpg/.jpeg/.webp, 대소문자 무관)
-      │   ├─ 2.png
-      │   └─ ...
+      │   ├─ 01DESIGN & OBJECTS/           ← University 왼쪽 썸네일
+      │   │   ├─ tub1.png                  ← 기본 썸네일
+      │   │   ├─ tub2.png                  ← 마우스오버 썸네일
+      │   │   ├─ 1.jpg, 2.jpg ...          ← 상세페이지 슬라이드쇼용
+      │   │   └─ ...
+      │   └─ 02PAINTING & DRAWING/         ← University 오른쪽 썸네일
+      │       ├─ tub1.png
+      │       ├─ tub2.png
+      │       ├─ 1.png, 2.png ...
+      │       └─ ...
       ├─ 02House/
       ├─ 03Zbrush/
       ├─ 04Sci-fi Container/
@@ -28,7 +37,10 @@
       └─ 10Desert/
 ```
 
-폴더명은 `script.js` 상단 `PROJECTS` 배열의 `id` 값과 **철자·대소문자까지 정확히** 일치해야 합니다.
+폴더명은 `script.js` 상단 `PROJECTS` / `UNIVERSITY_ITEMS` 배열의 `id` 값과 **철자·대소문자까지 정확히**
+일치해야 합니다. `01University` 하위의 두 폴더명은 지금 `01DESIGN & OBJECTS`, `02PAINTING & DRAWING`
+(공백·대소문자·`&` 포함 정확히 이 형태)로 가정해 코드를 작성했습니다 — 실제 폴더명이 다르면
+`script.js` 맨 위 `UNIVERSITY_ITEMS` 배열의 두 `id` 값만 그에 맞게 고치면 됩니다.
 
 ## 2. 확장자 / 이미지 개수 — 신경 쓰지 않아도 됩니다
 
@@ -65,6 +77,12 @@ images/Personal/07Alley/
 - `thu1`이 아예 없는 폴더는 기존처럼 `1.png` 등 번호 이미지가 자동으로 대신 쓰입니다(하위 호환).
 - 상세페이지(클릭 후 나오는 슬라이드쇼)는 이전과 동일하게 `1, 2, 3...` 번호 이미지를 사용합니다. `thu1/thu2`는 그리드 썸네일 전용입니다.
 
+**University 섹션만 예외**: `01University` 아래 두 폴더(`01DESIGN & OBJECTS`, `02PAINTING & DRAWING`)는
+`thu1/thu2`가 아니라 **`tub1` / `tub2`** 파일명을 사용합니다 (마우스오버 전 = `tub1`, 마우스오버 시 = `tub2`).
+찾는 확장자 순서와 하위 호환 동작(없으면 `1.*`로 대체)은 동일합니다. 두 썸네일 모두 그리드 상단의
+Desert/Gate 타일과 같은 16:9 비율로 나란히 표시되고, 다른 썸네일처럼 평소엔 사진만 보이다가
+마우스를 올렸을 때만 제목과 소분류 텍스트가 나타납니다.
+
 ## 2-2. "분명 수정했는데 사이트에 안 보여요" 체크리스트
 
 코드(`index.html`/`style.css`/`script.js`) 자체는 정상이어도, 아래 세 가지 중 하나 때문에
@@ -77,8 +95,8 @@ images/Personal/07Alley/
 2. **`thu1`/`thu2` 이미지 파일이 해당 프로젝트 폴더에 실제로 있는지** — 예:
    `images/Personal/07Alley/thu1.png`. 파일명은 대소문자까지 정확히 `thu1`, `thu2` (소문자)여야 합니다.
 3. **캐시** — GitHub Pages/브라우저가 옛날 `style.css`, `script.js`를 그대로 보여줄 수 있습니다.
-   `index.html`에 `style.css?v=6`, `script.js?v=6`처럼 버전 숫자를 붙여뒀으니, **다음에 또 수정할 때마다
-   `v=6`를 `v=7`, `v=8`...로 올려주세요.** 그러면 캐시와 상관없이 항상 최신 파일을 불러옵니다.
+   `index.html`에 `style.css?v=7`, `script.js?v=7`처럼 버전 숫자를 붙여뒀으니, **다음에 또 수정할 때마다
+   `v=7`을 `v=8`, `v=9`...로 올려주세요.** 그러면 캐시와 상관없이 항상 최신 파일을 불러옵니다.
    지금 당장 확인하려면 시크릿 창으로 열거나 Ctrl+Shift+R(강력 새로고침)을 해보세요.
 
 그래도 안 되면: 배포된 사이트에서 **F12 → Console 탭**을 열어보세요. `thu1`/`thu2`를 못 찾으면
@@ -97,6 +115,16 @@ images/Personal/07Alley/
   그 프로젝트의 `1.*` 파일이 이미지든 동영상이든 자동으로 배너에 표시됩니다.
   (지금은 `10Desert/1.mp4`가 배너로 나오도록 설정되어 있습니다.)
 - 동영상은 음소거(muted)로 자동 재생/반복되며, 상세페이지에서는 재생 컨트롤이 표시됩니다.
+
+## 2-4. ABOUT 페이지
+
+상단 메뉴의 **ABOUT**을 클릭하면 이력서 형태의 전체화면 프로필 페이지가 열립니다 (다른 프로젝트
+상세페이지처럼 오버레이로 뜨고, 좌상단 **← Back**으로 닫힙니다).
+
+- 프로필 사진은 `images/Personal/about/1.png` 경로를 그대로 사용합니다 — 이 경로에 파일이 있어야 보입니다.
+- 이름/직함/이메일, TOOLS, EDUCATION, CAREER 내용은 `index.html`의 `<section class="about-page" id="about">`
+  블록 안에 직접 텍스트로 들어가 있습니다 (다른 프로젝트처럼 자동 탐색되는 게 아니라 고정 텍스트입니다).
+  내용을 바꾸려면 이 블록의 텍스트만 수정하면 됩니다.
 
 ## 3. 새 프로젝트 추가/수정하는 법
 

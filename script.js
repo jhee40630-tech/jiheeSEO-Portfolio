@@ -19,10 +19,38 @@ const PROJECTS = [
   { id: "03Zbrush",               label: "Zbrush",               category: "Sculpt",      desc: "유기적 형태 스컬프팅 연습 시리즈.", role: "Sculpting", scope: "Personal", focus: "Organic Form", pipeline: "ZBrush · KeyShot" },
 ];
 
-const UNIVERSITY = { id: "01University", label: "University", category: "Environment", desc: "캠퍼스 건축물을 하드서페이스 모델링으로 재구성한 프로젝트.", role: "Modeling / Lighting", scope: "Personal", focus: "Architecture", pipeline: "Blender · Substance" };
+/* University는 그리드가 아니라 별도 섹션에서 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING)로 나뉘어 보인다.
+   각 항목의 id는 images/Personal/ 아래 실제 하위 폴더 경로와 정확히 일치해야 함:
+   images/Personal/01University/01DESIGN & OBJECTS/
+   images/Personal/01University/02PAINTING & DRAWING/
+   (폴더 안에는 상세페이지용 1,2,3... 번호 이미지와, 썸네일용 tub1/tub2 파일을 넣는다) */
+const UNIVERSITY_ITEMS = [
+  {
+    id: "01University/01DESIGN & OBJECTS",
+    label: "DESIGN & OBJECTS",
+    sub: "Digital Illustration · Sculpture · Branding",
+    category: "Design / Illustration",
+    desc: "일러스트레이션, 조형, 브랜딩 등 대학 시절 진행한 디자인 및 오브젝트 작업 아카이브.",
+    role: "Illustration / Sculpture / Branding",
+    scope: "University",
+    focus: "Design & Object",
+    pipeline: "Mixed Media · Digital",
+  },
+  {
+    id: "01University/02PAINTING & DRAWING",
+    label: "PAINTING & DRAWING",
+    sub: "Oil · Watercolor · Oriental Painting · Drawing",
+    category: "Painting / Drawing",
+    desc: "유화, 수채화, 동양화, 드로잉 등 다양한 매체로 진행한 회화 작업 아카이브.",
+    role: "Painting / Drawing",
+    scope: "University",
+    focus: "Traditional Media",
+    pipeline: "Oil · Watercolor · Ink",
+  },
+];
 
-// 상세페이지 조회 / "다음 프로젝트" 순환에는 University까지 포함해서 사용
-const ALL_PROJECTS = [...PROJECTS, UNIVERSITY];
+// 상세페이지 조회 / "다음 프로젝트" 순환에는 University 2개 항목까지 포함해서 사용
+const ALL_PROJECTS = [...PROJECTS, ...UNIVERSITY_ITEMS];
 
 // images/ 폴더 바로 아래에 Personal 폴더가 있는 실제 구조를 반영
 const IMAGE_ROOT = "images/Personal";
@@ -118,22 +146,24 @@ async function resolveThumb(base, name) {
   return null;
 }
 
+/* name1/name2로 찾을 파일명을 바꿀 수 있음 — 기본은 thu1/thu2, University 2개 섹션은 tub1/tub2 사용 */
 const thumbCache = new Map();
-function getProjectThumbs(id) {
-  if (!thumbCache.has(id)) {
+function getProjectThumbs(id, name1 = "thu1", name2 = "thu2") {
+  const cacheKey = `${id}::${name1}::${name2}`;
+  if (!thumbCache.has(cacheKey)) {
     const base = projectBase(id);
     thumbCache.set(
-      id,
-      Promise.all([resolveThumb(base, "thu1"), resolveThumb(base, "thu2")]).then(
+      cacheKey,
+      Promise.all([resolveThumb(base, name1), resolveThumb(base, name2)]).then(
         ([thu1, thu2]) => {
           // 콘솔(F12)에서 정확히 어떤 경로를 찾다가 실패했는지 바로 확인 가능
           if (!thu1) {
             console.warn(
-              `[thumb 없음] ${base}/thu1.(png/jpg/jpeg/webp) 를 찾지 못해 1.* 이미지로 대체합니다. 파일명이 정확히 소문자 "thu1"인지, 경로가 맞는지 확인하세요.`
+              `[thumb 없음] ${base}/${name1}.(png/jpg/jpeg/webp) 를 찾지 못해 1.* 이미지로 대체합니다. 파일명이 정확히 소문자 "${name1}"인지, 경로가 맞는지 확인하세요.`
             );
           } else if (!thu2) {
             console.warn(
-              `[thumb 없음] ${base}/thu2.(png/jpg/jpeg/webp) 를 찾지 못해 마우스오버 전환 없이 thu1로 고정됩니다.`
+              `[thumb 없음] ${base}/${name2}.(png/jpg/jpeg/webp) 를 찾지 못해 마우스오버 전환 없이 ${name1}로 고정됩니다.`
             );
           }
           return { thu1, thu2 };
@@ -141,7 +171,7 @@ function getProjectThumbs(id) {
       )
     );
   }
-  return thumbCache.get(id);
+  return thumbCache.get(cacheKey);
 }
 
 /** tile(또는 spotlight tile) 엘리먼트에 hover 시 thu1 -> thu2 전환 동작을 연결 */
@@ -220,36 +250,57 @@ async function setHeroImage() {
   }
 }
 
-/* ===================== UNIVERSITY 단독 섹션 ===================== */
-async function buildUniversitySpotlight() {
-  const tile = document.getElementById("university-tile");
-  const img = document.getElementById("university-img");
-  if (!tile || !img) return;
+/* ===================== UNIVERSITY 섹션 — DESIGN & OBJECTS / PAINTING & DRAWING 2분할 =====================
+   그리드 타일과 동일한 마크업(.tile / .tile-overlay)을 재사용해서 동작도 똑같이 맞춘다:
+   평소엔 사진만 보이고, 마우스를 올렸을 때만 제목(tile-name) + 소분류(tile-sub) 텍스트가 나타남.
+   썸네일 파일명은 다른 프로젝트(thu1/thu2)와 다르게 tub1/tub2를 사용. */
+const universityDuo = document.getElementById("university-duo");
 
-  tile.addEventListener("click", (e) => {
-    e.preventDefault();
-    openDetail(UNIVERSITY.id);
-    history.pushState(null, "", `#work/${UNIVERSITY.id}`);
+function buildUniversityDuo() {
+  if (!universityDuo) return;
+  universityDuo.innerHTML = "";
+
+  UNIVERSITY_ITEMS.forEach((p) => {
+    const tile = document.createElement("a");
+    tile.href = `#work/${p.id}`;
+    tile.className = "tile loading";
+    tile.innerHTML = `
+      <div class="tile-overlay">
+        <span class="tile-name">${p.label}</span>
+        <span class="tile-sub">${p.sub}</span>
+      </div>
+    `;
+    tile.addEventListener("click", (e) => {
+      e.preventDefault();
+      openDetail(p.id);
+      history.pushState(null, "", `#work/${p.id}`);
+    });
+    universityDuo.appendChild(tile);
+
+    getProjectThumbs(p.id, "tub1", "tub2").then(async ({ thu1, thu2 }) => {
+      tile.classList.remove("loading");
+      let mainUrl = thu1;
+      if (!mainUrl) {
+        // tub1이 없으면 기존처럼 번호 매긴 첫 "이미지"로 대체 (동영상은 썸네일로 못 씀)
+        const media = await getProjectImages(p.id);
+        const firstImage = media.find((m) => m.type === "image");
+        mainUrl = firstImage ? firstImage.url : null;
+      }
+      if (!mainUrl) {
+        tile.classList.add("is-placeholder");
+        tile.insertAdjacentHTML(
+          "afterbegin",
+          `<span class="placeholder-path">${projectBase(p.id)}/tub1.* (또는 1.*)</span>`
+        );
+        return;
+      }
+      const img = document.createElement("img");
+      img.src = mainUrl;
+      img.alt = p.label;
+      tile.prepend(img);
+      attachHoverThumb(tile, img, mainUrl, thu2);
+    });
   });
-
-  const { thu1, thu2 } = await getProjectThumbs(UNIVERSITY.id);
-  let mainUrl = thu1;
-  if (!mainUrl) {
-    const media = await getProjectImages(UNIVERSITY.id);
-    const firstImage = media.find((m) => m.type === "image");
-    mainUrl = firstImage ? firstImage.url : null;
-  }
-  if (!mainUrl) {
-    tile.classList.add("is-placeholder");
-    tile.insertAdjacentHTML(
-      "afterbegin",
-      `<span class="placeholder-path">${projectBase(UNIVERSITY.id)}/thu1.* (또는 1.*)</span>`
-    );
-    return;
-  }
-  img.src = mainUrl;
-  img.alt = UNIVERSITY.label;
-  attachHoverThumb(tile, img, mainUrl, thu2);
 }
 
 /* ===================== DETAIL PAGE ===================== */
@@ -398,13 +449,56 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "ArrowLeft") { showImage(currentIndex - 1); startSlideshow(); }
 });
 
-/* deep-link support: #work/07Alley */
+/* ===================== ABOUT PAGE (상단 네비 ABOUT 클릭 시 여는 전체화면 프로필 페이지) ===================== */
+const aboutPage = document.getElementById("about");
+const aboutBack = document.getElementById("about-back");
+const navAbout = document.getElementById("nav-about");
+
+function openAbout() {
+  aboutPage.classList.add("is-open");
+  aboutPage.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeAbout() {
+  aboutPage.classList.remove("is-open");
+  aboutPage.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  if (location.hash === "#about") {
+    history.pushState(null, "", "#works");
+  }
+}
+
+if (navAbout) {
+  navAbout.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeDetail();
+    openAbout();
+    history.pushState(null, "", "#about");
+  });
+}
+if (aboutBack) {
+  aboutBack.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeAbout();
+  });
+}
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && aboutPage.classList.contains("is-open")) closeAbout();
+});
+
+/* deep-link support: #work/07Alley , #about */
 function handleHash() {
   const m = location.hash.match(/^#work\/(.+)$/);
   if (m) {
+    closeAbout();
     openDetail(decodeURIComponent(m[1]));
+  } else if (location.hash === "#about") {
+    closeDetail();
+    openAbout();
   } else {
     closeDetail();
+    closeAbout();
   }
 }
 window.addEventListener("hashchange", handleHash);
@@ -412,5 +506,5 @@ window.addEventListener("hashchange", handleHash);
 /* ===================== INIT ===================== */
 buildGrid();
 setHeroImage();
-buildUniversitySpotlight();
+buildUniversityDuo();
 handleHash();
