@@ -20,10 +20,14 @@ const PROJECTS = [
 ];
 
 /* University는 그리드가 아니라 별도 섹션에서 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING)로 나뉘어 보인다.
-   각 항목의 id는 images/Personal/ 아래 실제 하위 폴더 경로와 정확히 일치해야 함:
+   각 항목의 id는 images/Personal/ 아래 실제 하위 폴더 경로와 "공백 하나까지" 정확히 일치해야 함:
    images/Personal/01University/01DESIGN & OBJECTS/
    images/Personal/01University/02PAINTING & DRAWING/
-   (폴더 안에는 상세페이지용 1,2,3... 번호 이미지와, 썸네일용 tub1/tub2 파일을 넣는다) */
+   ※ 실제 폴더명에 공백이 하나라도 다르면(예: "02 PAINTING & DRAWING"처럼 "02"와 "PAINTING" 사이에
+     공백이 끼면) 이 폴더 안의 모든 파일이 통째로 404가 나서 썸네일뿐 아니라 상세페이지까지
+     완전히 빈 placeholder로 보인다. 아래 id 문자열을 실제 폴더명과 글자 하나하나 대조할 것.
+   (폴더 안에는 상세페이지용 1,2,3... 번호 이미지와, 썸네일용 tub1/tub2 파일을 넣는다.
+    tub1/tub2가 없으면 thu1/thu2도 자동으로 시도하고, 그것도 없으면 1.*로 대체한다.) */
 const UNIVERSITY_ITEMS = [
   {
     id: "01University/01DESIGN & OBJECTS",
@@ -174,6 +178,37 @@ function getProjectThumbs(id, name1 = "thu1", name2 = "thu2") {
   return thumbCache.get(cacheKey);
 }
 
+/* University 섹션 전용: tub1/tub2 를 먼저 찾고, 없으면 thu1/thu2 로도 찾아본다.
+   (다른 프로젝트 폴더와 실수로 같은 thu1/thu2 파일명을 넣어도 그대로 동작하도록 하는 안전장치) */
+const universityThumbCache = new Map();
+function getUniversityThumbs(id) {
+  if (!universityThumbCache.has(id)) {
+    const base = projectBase(id);
+    universityThumbCache.set(
+      id,
+      (async () => {
+        let thu1 = await resolveThumb(base, "tub1");
+        let thu2 = await resolveThumb(base, "tub2");
+        if (!thu1) {
+          thu1 = await resolveThumb(base, "thu1");
+          thu2 = await resolveThumb(base, "thu2");
+        }
+        if (!thu1) {
+          console.warn(
+            `[thumb 없음] ${base}/tub1.* 와 ${base}/thu1.* 를 모두 찾지 못해 1.* 이미지로 대체합니다. 폴더 경로(공백/철자)와 파일명을 확인하세요.`
+          );
+        } else if (!thu2) {
+          console.warn(
+            `[thumb 없음] 두 번째 썸네일(tub2 또는 thu2)을 찾지 못해 마우스오버 전환 없이 첫 번째 썸네일로 고정됩니다.`
+          );
+        }
+        return { thu1, thu2 };
+      })()
+    );
+  }
+  return universityThumbCache.get(id);
+}
+
 /** tile(또는 spotlight tile) 엘리먼트에 hover 시 thu1 -> thu2 전환 동작을 연결 */
 function attachHoverThumb(tile, img, mainUrl, thu2Url) {
   if (!thu2Url) return; // thu2가 없으면 hover 전환 없이 mainUrl 고정
@@ -277,11 +312,11 @@ function buildUniversityDuo() {
     });
     universityDuo.appendChild(tile);
 
-    getProjectThumbs(p.id, "tub1", "tub2").then(async ({ thu1, thu2 }) => {
+    getUniversityThumbs(p.id).then(async ({ thu1, thu2 }) => {
       tile.classList.remove("loading");
       let mainUrl = thu1;
       if (!mainUrl) {
-        // tub1이 없으면 기존처럼 번호 매긴 첫 "이미지"로 대체 (동영상은 썸네일로 못 씀)
+        // tub1/thu1이 없으면 기존처럼 번호 매긴 첫 "이미지"로 대체 (동영상은 썸네일로 못 씀)
         const media = await getProjectImages(p.id);
         const firstImage = media.find((m) => m.type === "image");
         mainUrl = firstImage ? firstImage.url : null;
@@ -290,7 +325,7 @@ function buildUniversityDuo() {
         tile.classList.add("is-placeholder");
         tile.insertAdjacentHTML(
           "afterbegin",
-          `<span class="placeholder-path">${projectBase(p.id)}/tub1.* (또는 1.*)</span>`
+          `<span class="placeholder-path">${projectBase(p.id)}/tub1.* 또는 thu1.* (또는 1.*)</span>`
         );
         return;
       }
