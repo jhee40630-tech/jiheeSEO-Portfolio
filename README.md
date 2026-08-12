@@ -21,7 +21,7 @@
       │   │   ├─ tub2.png                  ← 마우스오버 썸네일
       │   │   ├─ 1.jpg, 2.jpg ...          ← 상세페이지 슬라이드쇼용
       │   │   └─ ...
-      │   └─ 02PAINTING & DRAWING/         ← University 오른쪽 썸네일
+      │   └─ 02PaintingDrawing/            ← University 오른쪽 썸네일 (공백 없는 폴더명!)
       │       ├─ tub1.png
       │       ├─ tub2.png
       │       ├─ 1.png, 2.png ...
@@ -38,9 +38,9 @@
 ```
 
 폴더명은 `script.js` 상단 `PROJECTS` / `UNIVERSITY_ITEMS` 배열의 `id` 값과 **철자·대소문자까지 정확히**
-일치해야 합니다. `01University` 하위의 두 폴더명은 지금 `01DESIGN & OBJECTS`, `02PAINTING & DRAWING`
-(공백·대소문자·`&` 포함 정확히 이 형태)로 가정해 코드를 작성했습니다 — 실제 폴더명이 다르면
-`script.js` 맨 위 `UNIVERSITY_ITEMS` 배열의 두 `id` 값만 그에 맞게 고치면 됩니다.
+일치해야 합니다. `01University` 하위의 두 폴더명은 지금 `01DESIGN & OBJECTS`, `02PaintingDrawing`
+(첫 번째만 공백·`&` 포함, 두 번째는 공백/특수문자 없이 붙여 쓴 이름)로 가정해 코드를 작성했습니다 —
+실제 폴더명이 다르면 `script.js` 맨 위 `UNIVERSITY_ITEMS` 배열의 두 `id` 값만 그에 맞게 고치면 됩니다.
 
 ## 2. 확장자 / 이미지 개수 — 신경 쓰지 않아도 됩니다
 
@@ -77,7 +77,7 @@ images/Personal/07Alley/
 - `thu1`이 아예 없는 폴더는 기존처럼 `1.png` 등 번호 이미지가 자동으로 대신 쓰입니다(하위 호환).
 - 상세페이지(클릭 후 나오는 슬라이드쇼)는 이전과 동일하게 `1, 2, 3...` 번호 이미지를 사용합니다. `thu1/thu2`는 그리드 썸네일 전용입니다.
 
-**University 섹션만 예외**: `01University` 아래 두 폴더(`01DESIGN & OBJECTS`, `02PAINTING & DRAWING`)는
+**University 섹션만 예외**: `01University` 아래 두 폴더(`01DESIGN & OBJECTS`, `02PaintingDrawing`)는
 기본적으로 `thu1/thu2`가 아니라 **`tub1` / `tub2`** 파일명을 먼저 찾습니다 (마우스오버 전 = `tub1`,
 마우스오버 시 = `tub2`). `tub1`이 없으면 **자동으로 `thu1`/`thu2`도 찾아보고**, 그것도 없으면 기존처럼
 `1.*`로 대체합니다 — 즉 두 폴더에 `thu1.png`/`thu2.png`만 넣어놔도 정상적으로 마우스오버 전환이 동작합니다.
@@ -85,12 +85,12 @@ images/Personal/07Alley/
 Desert/Gate 타일과 같은 16:9 비율로 나란히 표시되고, 다른 썸네일처럼 평소엔 사진만 보이다가
 마우스를 올렸을 때만 제목과 소분류 텍스트가 나타납니다.
 
-> ⚠️ **폴더명 공백 주의**: University의 두 폴더 id는 `script.js`에 각각
-> `01DESIGN & OBJECTS`, `02PAINTING & DRAWING`로 (번호와 이름 사이 공백 없이) 하드코딩돼 있습니다.
-> 실제 폴더명이 `02 PAINTING & DRAWING`처럼 번호와 이름 사이에 공백이 하나라도 더 들어가면,
-> 그 폴더 안의 `tub1`/`thu1`뿐 아니라 `1.png` 같은 번호 이미지까지 전부 경로가 어긋나서
-> 통째로 빈 placeholder가 됩니다 (부분적으로만 깨지는 게 아니라 완전히 안 보임). 폴더명을
-> `01DESIGN & OBJECTS`와 동일한 규칙(번호 바로 뒤 공백 없음)으로 맞춰주세요.
+> ⚠️ **폴더명 공백 주의**: 두 번째 폴더는 예전에 `02PAINTING & DRAWING`(공백 포함)이었는데,
+> 공백 개수가 한 칸이라도 어긋나면(`02 PAINTING...`처럼 번호 뒤 공백이 남거나, `&` 뒤에 공백이
+> 두 칸 들어가는 등) 폴더 안의 `tub1`/`thu1`은 물론 `1.png` 같은 번호 이미지까지 전부 경로가
+> 어긋나서 통째로 빈 placeholder가 됩니다. 눈으로 공백 개수를 세는 건 실수하기 쉬워서, 아예
+> **공백을 없앤 `02PaintingDrawing`으로 폴더명을 바꾸는 방식**으로 코드를 수정했습니다. 실제
+> 폴더도 정확히 `02PaintingDrawing`(공백 없이, 대소문자도 이대로)으로 이름을 바꿔주세요.
 
 ## 2-2. "분명 수정했는데 사이트에 안 보여요" 체크리스트
 

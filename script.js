@@ -22,10 +22,12 @@ const PROJECTS = [
 /* University는 그리드가 아니라 별도 섹션에서 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING)로 나뉘어 보인다.
    각 항목의 id는 images/Personal/ 아래 실제 하위 폴더 경로와 "공백 하나까지" 정확히 일치해야 함:
    images/Personal/01University/01DESIGN & OBJECTS/
-   images/Personal/01University/02PAINTING & DRAWING/
-   ※ 실제 폴더명에 공백이 하나라도 다르면(예: "02 PAINTING & DRAWING"처럼 "02"와 "PAINTING" 사이에
-     공백이 끼면) 이 폴더 안의 모든 파일이 통째로 404가 나서 썸네일뿐 아니라 상세페이지까지
-     완전히 빈 placeholder로 보인다. 아래 id 문자열을 실제 폴더명과 글자 하나하나 대조할 것.
+   images/Personal/01University/02PaintingDrawing/
+   ※ 두 번째 폴더는 이름에 공백을 아예 없앤 "02PaintingDrawing"을 사용한다 (예전엔
+     "02PAINTING & DRAWING"처럼 공백을 넣었었는데, 폴더명의 공백 개수가 한 칸이라도 어긋나면
+     이 폴더 안의 모든 파일이 통째로 404가 나서 썸네일뿐 아니라 상세페이지까지 완전히 빈
+     placeholder로 보였다 — 그래서 공백 매칭 자체를 없애는 쪽으로 바꿨다). 아래 id 문자열을
+     실제 폴더명과 글자 하나하나 대조할 것.
    (폴더 안에는 상세페이지용 1,2,3... 번호 이미지와, 썸네일용 tub1/tub2 파일을 넣는다.
     tub1/tub2가 없으면 thu1/thu2도 자동으로 시도하고, 그것도 없으면 1.*로 대체한다.) */
 const UNIVERSITY_ITEMS = [
@@ -41,7 +43,7 @@ const UNIVERSITY_ITEMS = [
     pipeline: "Mixed Media · Digital",
   },
   {
-    id: "01University/02PAINTING & DRAWING",
+    id: "01University/02PaintingDrawing",
     label: "PAINTING & DRAWING",
     sub: "Oil · Watercolor · Oriental Painting · Drawing",
     category: "Painting / Drawing",
