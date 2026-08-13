@@ -139,19 +139,19 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   grid-column:span 2; grid-row:span 1;
 }
 /* mosaic sizing rhythm across 9 items (University는 그리드 밖, 별도 섹션)
-   — 순서: 10 Desert, 09 Gate, 08 Trebuchet, 07 Alley, 06 Pillar,
+   — 순서: 10 Desert, 09 Gate, 08 Trebuchet, 06 Pillar, 07 Alley,
            05 Computer, 04 Sci-fi Container, 02 House, 03 Zbrush
    — 모든 타일이 grid-row:span 2로 동일해서 줄마다 "높이"가 전부 같다.
      폭(grid-column span)만 줄마다 달라지고, 한 줄의 span 합은 항상 6(=전체 폭).
-   — 2번째 줄: Trebuchet(3) + Alley(2) + Pillar(1) = 6, 자동으로 채워짐.
-     Trebuchet은 더 넓게(2→3), Alley는 세로 비율에 가깝게 좁게(3→2) 조정.
+   — 2번째 줄: Trebuchet(3) + Pillar(1) + Alley(2) = 6, 자동으로 채워짐.
+     Pillar와 Alley는 위치만 서로 바뀐 것이고 각자의 폭(1 / 2)은 그대로 유지된다.
    — 마지막 줄: 09 Zbrush는 정사각형(span 2)으로 줄여서 그리드 라인을 3~5로
      직접 지정 — 6칸 중 가운데 2칸에 배치되어 좌우 여백이 대칭으로 남는다. */
 .tile[data-i="0"]{grid-column:span 3; grid-row:span 2;} /* 10 Desert — 1번째 줄, 반 */
 .tile[data-i="1"]{grid-column:span 3; grid-row:span 2;} /* 09 Gate — 1번째 줄, 반 */
 .tile[data-i="2"]{grid-column:span 3; grid-row:span 2;} /* 08 Trebuchet — 폭 넓힘 */
-.tile[data-i="3"]{grid-column:span 2; grid-row:span 2;} /* 07 Alley — 정사각형에 가깝게 좁힘 */
-.tile[data-i="4"]{grid-column:span 1; grid-row:span 2;} /* 06 Pillar — 기둥이라 폭만 좁게 */
+.tile[data-i="3"]{grid-column:span 1; grid-row:span 2;} /* 06 Pillar — Alley와 위치를 바꿈, 기둥이라 폭만 좁게 유지 */
+.tile[data-i="4"]{grid-column:span 2; grid-row:span 2;} /* 07 Alley — Pillar와 위치를 바꿈, 정사각형에 가깝게 유지 */
 .tile[data-i="5"]{grid-column:span 2; grid-row:span 2;} /* 05 Computer */
 .tile[data-i="6"]{grid-column:span 2; grid-row:span 2;} /* 04 Sci-fi Container */
 .tile[data-i="7"]{grid-column:span 2; grid-row:span 2;} /* 02 House */
