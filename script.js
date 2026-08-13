@@ -1,6 +1,7 @@
 /* =========================================================
-   PROJECTS — 그리드에 들어가는 9개. 순서: 10,9,8,7,6,5,4,2,3
-   (스케치 기준: 아래로 갈수록 작은 숫자, 마지막 두 칸만 2 -> 3 순서로 바뀜)
+   PROJECTS — 그리드에 들어가는 9개. 순서: 10,9,8,6,7,5,4,2,3
+   (Alley/Pillar 위치를 서로 바꿔서 6(Pillar)이 7(Alley)보다 먼저 나옴 —
+    마우스오버 숫자와 칸 크기는 아래 style.css의 data-i 순서를 참고)
    UNIVERSITY — 그리드에 넣지 않고 별도 "University" 섹션으로 분리.
    base: images 폴더 기준 실제 경로 (Personal 폴더 포함)
    ※ count/ext 는 적을 필요 없습니다 — 브라우저가 자동으로
@@ -11,8 +12,8 @@ const PROJECTS = [
   { id: "10Desert",               label: "Desert",               category: "Environment", desc: "사막 지형의 라이팅과 대기 표현.", role: "Environment / Lighting", scope: "Personal", focus: "Atmosphere", pipeline: "Blender · World Machine" },
   { id: "09Gate",                 label: "Gate",                 category: "Environment", desc: "관문 구조물의 스케일과 디테일 스터디.", role: "Modeling / Lookdev", scope: "Personal", focus: "Architecture", pipeline: "Blender · Substance" },
   { id: "08Trebuchet",            label: "Trebuchet",            category: "Hard Surface",desc: "투석기 메커니즘을 기능적으로 모델링.", role: "Modeling", scope: "Personal", focus: "Mechanical", pipeline: "Blender" },
-  { id: "07Alley",                label: "Alley",                category: "Environment", desc: "좁은 골목의 분위기와 조명을 다룬 씬.", role: "Modeling / Lighting", scope: "Personal", focus: "Mood & Lighting", pipeline: "Blender · Substance" },
   { id: "06Pillar",               label: "Pillar",               category: "Environment", desc: "고대 건축 기둥의 마모와 질감을 재현.", role: "Sculpting / Texturing", scope: "Personal", focus: "Weathering", pipeline: "ZBrush · Substance" },
+  { id: "07Alley",                label: "Alley",                category: "Environment", desc: "좁은 골목의 분위기와 조명을 다룬 씬.", role: "Modeling / Lighting", scope: "Personal", focus: "Mood & Lighting", pipeline: "Blender · Substance" },
   { id: "05Computer",             label: "Computer",             category: "Prop",        desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.", role: "Modeling / Texturing", scope: "Personal", focus: "Prop Design", pipeline: "Blender · Substance" },
   { id: "04Sci-fi Container",     label: "Sci-fi Container",     category: "Hard Surface",desc: "SF 세계관의 컨테이너 구조물 디자인.", role: "Modeling / Lookdev", scope: "Personal", focus: "Hard Surface", pipeline: "Blender · Substance" },
   { id: "02House",               label: "House",               category: "Environment", desc: "주거 공간의 구조와 채광을 스터디한 씬.", role: "Modeling / Texturing", scope: "Personal", focus: "Interior", pipeline: "Blender · Substance" },
