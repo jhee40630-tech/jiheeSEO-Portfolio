@@ -9,15 +9,15 @@
      더 이상 찾을 수 없는 지점에서 자동으로 멈춥니다.
    ========================================================= */
 const PROJECTS = [
-  { id: "10Desert",               label: "Desert",               category: "Environment", desc: "사막 지형의 라이팅과 대기 표현.", role: "Environment / Lighting", scope: "Personal", focus: "Atmosphere", pipeline: "Blender · World Machine" },
-  { id: "09Gate",                 label: "Gate",                 category: "Environment", desc: "관문 구조물의 스케일과 디테일 스터디.", role: "Modeling / Lookdev", scope: "Personal", focus: "Architecture", pipeline: "Blender · Substance" },
-  { id: "08Trebuchet",            label: "Trebuchet",            category: "Hard Surface",desc: "투석기 메커니즘을 기능적으로 모델링.", role: "Modeling", scope: "Personal", focus: "Mechanical", pipeline: "Blender" },
-  { id: "06Pillar",               label: "Pillar",               category: "Environment", desc: "고대 건축 기둥의 마모와 질감을 재현.", role: "Sculpting / Texturing", scope: "Personal", focus: "Weathering", pipeline: "ZBrush · Substance" },
-  { id: "07Alley",                label: "Alley",                category: "Environment", desc: "좁은 골목의 분위기와 조명을 다룬 씬.", role: "Modeling / Lighting", scope: "Personal", focus: "Mood & Lighting", pipeline: "Blender · Substance" },
-  { id: "05Computer",             label: "Computer",             category: "Prop",        desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.", role: "Modeling / Texturing", scope: "Personal", focus: "Prop Design", pipeline: "Blender · Substance" },
-  { id: "04Sci-fi Container",     label: "Sci-fi Container",     category: "Hard Surface",desc: "SF 세계관의 컨테이너 구조물 디자인.", role: "Modeling / Lookdev", scope: "Personal", focus: "Hard Surface", pipeline: "Blender · Substance" },
-  { id: "02House",               label: "House",               category: "Environment", desc: "주거 공간의 구조와 채광을 스터디한 씬.", role: "Modeling / Texturing", scope: "Personal", focus: "Interior", pipeline: "Blender · Substance" },
-  { id: "03Zbrush",               label: "Zbrush",               category: "Sculpt",      desc: "유기적 형태 스컬프팅 연습 시리즈.", role: "Sculpting", scope: "Personal", focus: "Organic Form", pipeline: "ZBrush · KeyShot" },
+  { id: "10Desert",               label: "Desert",               category: "Environment", desc: "고대 문명의 흔적이 남아 있는 사막 속 유적 공간을 제작했습니다. 반복되는 건축 구조와 장식 요소를 활용해 규모감 있는 공간을 구성하는 데 집중했습니다.", role: "Full Pipeline", scope: "Environment Art · Material Authoring · Lighting · Scene Composition", focus: "모듈형 환경 구성 · 건축 디테일 · 재질 변화 · 공간 연출", pipeline: "3DS Max → ZBrush → Substance Painter → UE5" },
+  { id: "09Gate",                 label: "Gate",                 category: "Environment", desc: "화려한 장식이 남아 있는 고전 건축 양식의 대형 게이트를 제작했습니다. 석재 조각과 금속 장식의 대비를 살리면서 반복 구조와 세부 장식의 밀도를 조절하는 데 집중했습니다.", role: "Full Pipeline", scope: "Environment Art · Prop Art · Material Authoring · Lighting", focus: "건축 조형 · 석재 디테일 · 장식 패턴 · 소재 대비", pipeline: "3DS Max → ZBrush → Substance Painter → UE5" },
+  { id: "08Trebuchet",            label: "Trebuchet",            category: "Hard Surface",desc: "오랜 시간 야외에서 사용된 중세 투석기를 제작했습니다. 목재와 금속의 노화 차이를 살리고, 구조적으로 설득력 있는 형태와 사용 흔적을 표현하는 데 집중했습니다.", role: "Full Pipeline", scope: "Prop Art · Material Authoring · Lighting · Scene Composition", focus: "목재 재질 · 금속 마모 · 구조 표현 · 자연스러운 노화", pipeline: "3DS Max → ZBrush → Substance Painter → Marmoset" },
+  { id: "06Pillar",               label: "Pillar",               category: "Environment", desc: "건축 환경에 반복적으로 활용할 수 있는 장식형 석조 기둥을 제작했습니다. 큰 형태를 유지하면서 조각 디테일과 표면 손상이 자연스럽게 이어지도록 작업했습니다.", role: "Full Pipeline", scope: "Environment Prop · Sculpting · Material Authoring", focus: "석재 조각 · 표면 손상 · 장식 디테일 · 모듈 활용", pipeline: "3DS Max → ZBrush → Substance Painter → Marmoset" },
+  { id: "07Alley",                label: "Alley",                category: "Environment", desc: "도심 골목에 오랫동안 놓여 있던 쓰레기 컨테이너를 중심으로 작은 환경을 구성했습니다. 반복되는 먼지와 얼룩, 생활 흔적을 더해 실제 사용된 공간처럼 보이도록 표현했습니다.", role: "Full Pipeline", scope: "Environment Art · Prop Art · Material Authoring · Scene Composition", focus: "생활 오염 · 표면 마모 · 스티커 디테일 · 환경적 맥락", pipeline: "3DS Max → Substance Painter → UE5" },
+  { id: "05Computer",             label: "Computer",             category: "Prop",        desc: "오래된 전자기기의 형태와 사용감을 재해석한 레트로 컴퓨터를 제작했습니다. 플라스틱 변색과 스티커, 먼지 등 작은 흔적을 활용해 오브젝트의 시간감을 표현했습니다.", role: "Full Pipeline", scope: "Prop Art · Material Authoring · Lighting", focus: "플라스틱 재질 · 사용 흔적 · 그래픽 디테일 · 소품 연출", pipeline: "3DS Max → Substance Painter → Marmoset" },
+  { id: "04Sci-fi Container",     label: "Sci-fi Container",     category: "Hard Surface",desc: "산업용 장비를 연상시키는 SF 스타일의 수납 박스를 제작했습니다. 하드서페이스 구조와 패널 분할을 정리하고, 기능적으로 보이는 디테일과 소재 변화를 표현하는 데 집중했습니다.", role: "Full Pipeline", scope: "Prop Art · Hard Surface · Material Authoring · Lighting", focus: "건축 실루엣 · 재질 구분 · 소품 배치 · 판타지 분위기", pipeline: "3DS Max → Photoshop → Unity" },
+  { id: "02House",               label: "House",               category: "Environment", desc: "판타지 세계의 작은 상점을 상상해 건물과 주변 소품을 함께 제작했습니다. 목재와 회벽, 기와 등 다양한 재질을 구분하면서 비대칭적인 형태와 장식으로 개성을 살렸습니다.", role: "Full Pipeline", scope: "Environment Prop · Sculpting · Material Authoring", focus: "암석 형태 · 표면 침식 · 균열 디테일 · 자연스러운 실루엣", pipeline: "ZBrush → Substance Painter → Marmoset" },
+  { id: "03Zbrush",               label: "Zbrush",               category: "Sculpt",      desc: "유기적 형태 스컬프팅 연습 시리즈.", role: "Full Pipeline", scope: "Environment Art · Prop Art · Material Authoring · Scene Composition", focus: "건축 실루엣 · 재질 구분 · 소품 배치 · 판타지 분위기", pipeline: "3DS Max → Photoshop → Unity" },
 ];
 
 /* University는 그리드가 아니라 별도 섹션에서 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING)로 나뉘어 보인다.
@@ -38,7 +38,7 @@ const UNIVERSITY_ITEMS = [
     sub: "Digital Illustration · Sculpture · Branding",
     category: "Design / Illustration",
     desc: "일러스트레이션, 조형, 브랜딩 등 대학 시절 진행한 디자인 및 오브젝트 작업 아카이브.",
-    role: "Illustration / Sculpture / Branding",
+    type: "University Project / Personal Work",
     scope: "University",
     focus: "Design & Object",
     pipeline: "Mixed Media · Digital",
