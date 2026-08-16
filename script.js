@@ -1,9 +1,18 @@
 /* =========================================================
    PROJECTS — 그리드에 들어가는 9개.
-   3열 x 3행 고정 배치 (위→아래, 왼→오른 순서 그대로 그리드에 채워짐):
-     1행: Desert   / Gate      / Pillar
-     2행: Trebuchet/ Alley     / Computer
-     3행: Sci-fi Container / House / Zbrush
+   더 이상 칸 크기가 전부 똑같은 3x3 균일 그리드가 아니라, 항목마다 "가로:세로 비율"
+   (ratio, = 가로/세로)이 다른 "justified" 그리드입니다. 3개씩 끊어 한 줄이 되는 건
+   그대로지만, 한 줄 안에서 각 타일의 너비는 ratio 값에 비례해서 자동으로 배분되고
+   (넓은 비율일수록 더 넓게), 그 결과 같은 줄에 있는 타일들의 "높이"는 항상 똑같이
+   맞춰집니다. 그리고 모든 줄의 좌우 끝은 항상 컨테이너 폭과 정확히 일치하므로
+   (= 매 줄 너비가 동일) 줄마다 삐져나오거나 들어가는 문제가 생기지 않습니다.
+   즉 아래 순서/묶음이 곧 배치입니다:
+     1행: Desert(16:9) / Gate(16:9) / Pillar(세로 9:16)
+     2행: Trebuchet(약간 가로형) / Alley(정사각) / Computer(정사각)
+     3행: Sci-fi Container(정사각) / House(16:9) / Zbrush(정사각)
+   ratio: 타일의 가로/세로 비율. 1 = 정사각형, 16/9 ≈ 1.78 = 가로형, 9/16 = 0.5625 = 세로형.
+     정확한 숫자를 지킬 필요는 없고, 느낌만 맞으면 됩니다 — 값을 조금씩 조절해서
+     줄 전체의 균형(한쪽 타일만 과하게 좁아지거나 넓어지지 않게)을 맞추는 용도로도 쓰세요.
    date: 썸네일에 마우스오버 시 표시되는 날짜 (기존 "작품 번호" 대체)
    period: 상세페이지에 표시되는 "제작기간"
    pipeline: 상세페이지 "TOOLS" 항목에 그대로 표시됨
@@ -14,16 +23,20 @@
      더 이상 찾을 수 없는 지점에서 자동으로 멈춥니다.
    ========================================================= */
 const PROJECTS = [
-  { id: "10Desert",           label: "Desert",           category: "Environment",  desc: "사막 지형의 라이팅과 대기 표현.",           date: "2026.08", period: "2026.07 – 2026.08", role: "Environment / Lighting",  scope: "Personal", focus: "Atmosphere",       pipeline: "Blender · World Machine" },
-  { id: "09Gate",              label: "Gate",              category: "Environment",  desc: "관문 구조물의 스케일과 디테일 스터디.",       date: "2026.03", period: "2026.02 – 2026.03", role: "Modeling / Lookdev",       scope: "Personal", focus: "Architecture",      pipeline: "Blender · Substance" },
-  { id: "06Pillar",            label: "Pillar",            category: "Environment",  desc: "고대 건축 기둥의 마모와 질감을 재현.",        date: "2026.09", period: "2026.08 – 2026.09", role: "Sculpting / Texturing",    scope: "Personal", focus: "Weathering",        pipeline: "ZBrush · Substance" },
-  { id: "08Trebuchet",         label: "Trebuchet",         category: "Hard Surface", desc: "투석기 메커니즘을 기능적으로 모델링.",        date: "2025.11", period: "2025.10 – 2025.11", role: "Modeling",                 scope: "Personal", focus: "Mechanical",        pipeline: "Blender" },
-  { id: "07Alley",             label: "Alley",             category: "Environment",  desc: "좁은 골목의 분위기와 조명을 다룬 씬.",        date: "2026.09", period: "2026.08 – 2026.09", role: "Modeling / Lighting",      scope: "Personal", focus: "Mood & Lighting",   pipeline: "Blender · Substance" },
-  { id: "05Computer",          label: "Computer",          category: "Prop",         desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.",   date: "2025.04", period: "2025.03 – 2025.04", role: "Modeling / Texturing",     scope: "Personal", focus: "Prop Design",       pipeline: "Blender · Substance" },
-  { id: "04Sci-fi Container",  label: "Sci-fi Container",  category: "Hard Surface", desc: "SF 세계관의 컨테이너 구조물 디자인.",        date: "2025.06", period: "2025.05 – 2025.06", role: "Modeling / Lookdev",       scope: "Personal", focus: "Hard Surface",      pipeline: "Blender · Substance" },
-  { id: "02House",             label: "House",             category: "Environment",  desc: "주거 공간의 구조와 채광을 스터디한 씬.",      date: "2024.06", period: "2024.05 – 2024.06", role: "Modeling / Texturing",     scope: "Personal", focus: "Interior",          pipeline: "Blender · Substance" },
-  { id: "03Zbrush",            label: "Zbrush",            category: "Sculpt",       desc: "유기적 형태 스컬프팅 연습 시리즈.",          date: "2025.05", period: "2025.05 – 진행중",   role: "Sculpting",                scope: "Personal", focus: "Organic Form",      pipeline: "ZBrush · KeyShot" },
+  { id: "10Desert",           label: "Desert",           category: "Environment",  ratio: 16 / 9,  desc: "사막 지형의 라이팅과 대기 표현.",           date: "2026.08", period: "2026.07 – 2026.08", role: "Environment / Lighting",  scope: "Personal", focus: "Atmosphere",       pipeline: "Blender · World Machine" },
+  { id: "09Gate",              label: "Gate",              category: "Environment",  ratio: 16 / 9,  desc: "관문 구조물의 스케일과 디테일 스터디.",       date: "2026.03", period: "2026.02 – 2026.03", role: "Modeling / Lookdev",       scope: "Personal", focus: "Architecture",      pipeline: "Blender · Substance" },
+  { id: "06Pillar",            label: "Pillar",            category: "Environment",  ratio: 9 / 16,  desc: "고대 건축 기둥의 마모와 질감을 재현.",        date: "2026.09", period: "2026.08 – 2026.09", role: "Sculpting / Texturing",    scope: "Personal", focus: "Weathering",        pipeline: "ZBrush · Substance" },
+  { id: "08Trebuchet",         label: "Trebuchet",         category: "Hard Surface", ratio: 1.4,     desc: "투석기 메커니즘을 기능적으로 모델링.",        date: "2025.11", period: "2025.10 – 2025.11", role: "Modeling",                 scope: "Personal", focus: "Mechanical",        pipeline: "Blender" },
+  { id: "07Alley",             label: "Alley",             category: "Environment",  ratio: 1,       desc: "좁은 골목의 분위기와 조명을 다룬 씬.",        date: "2026.09", period: "2026.08 – 2026.09", role: "Modeling / Lighting",      scope: "Personal", focus: "Mood & Lighting",   pipeline: "Blender · Substance" },
+  { id: "05Computer",          label: "Computer",          category: "Prop",         ratio: 1,       desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.",   date: "2025.04", period: "2025.03 – 2025.04", role: "Modeling / Texturing",     scope: "Personal", focus: "Prop Design",       pipeline: "Blender · Substance" },
+  { id: "04Sci-fi Container",  label: "Sci-fi Container",  category: "Hard Surface", ratio: 1,       desc: "SF 세계관의 컨테이너 구조물 디자인.",        date: "2025.06", period: "2025.05 – 2025.06", role: "Modeling / Lookdev",       scope: "Personal", focus: "Hard Surface",      pipeline: "Blender · Substance" },
+  { id: "02House",             label: "House",             category: "Environment",  ratio: 16 / 9,  desc: "주거 공간의 구조와 채광을 스터디한 씬.",      date: "2024.06", period: "2024.05 – 2024.06", role: "Modeling / Texturing",     scope: "Personal", focus: "Interior",          pipeline: "Blender · Substance" },
+  { id: "03Zbrush",            label: "Zbrush",            category: "Sculpt",       ratio: 1,       desc: "유기적 형태 스컬프팅 연습 시리즈.",          date: "2025.05", period: "2025.05 – 진행중",   role: "Sculpting",                scope: "Personal", focus: "Organic Form",      pipeline: "ZBrush · KeyShot" },
 ];
+
+/* 한 줄에 몇 개씩 넣을지 (기존과 동일하게 3개씩 끊어서 한 줄). 순서를 유지한 채
+   묶음 크기만 바꾸고 싶으면 이 숫자만 조절하면 됩니다. */
+const GRID_ROW_SIZE = 3;
 
 /* University는 그리드가 아니라 별도 섹션에서 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING)로 나뉘어 보인다.
    각 항목의 id는 images/Personal/ 아래 실제 하위 폴더 경로와 "공백 하나까지" 정확히 일치해야 함:
@@ -218,54 +231,66 @@ function getUniversityThumb(id) {
 }
 
 /* ===================== GRID =====================
-   3열 x 3행 고정 배치. PROJECTS 배열 순서대로 왼쪽 위 → 오른쪽 아래로 채워짐. */
+   PROJECTS 배열을 GRID_ROW_SIZE(기본 3)개씩 끊어 ".grid-row"를 만들고, 그 안에
+   타일을 순서대로 채운다. 각 타일에는 CSS 변수 --ratio(가로/세로 비율)를 심어두고,
+   style.css의 .grid-row가 flex로 그 비율만큼 너비를 나눠 갖게 해서 "같은 줄은
+   항상 높이가 같고, 모든 줄의 폭은 항상 컨테이너 폭과 같은" justified 레이아웃을 만든다. */
 const grid = document.getElementById("grid");
 
 function buildGrid() {
   grid.innerHTML = "";
-  PROJECTS.forEach((p) => {
-    const tile = document.createElement("a");
-    tile.href = `#work/${p.id}`;
-    tile.className = "tile loading";
-    tile.innerHTML = `
-      <div class="tile-overlay">
-        <span class="tile-index">${p.date}</span>
-        <span class="tile-name">${p.label}</span>
-        <span class="tile-cat">${p.category}</span>
-      </div>
-    `;
-    tile.addEventListener("click", (e) => {
-      e.preventDefault();
-      openDetail(p.id);
-      history.pushState(null, "", `#work/${p.id}`);
-    });
-    grid.appendChild(tile);
 
-    getProjectThumb(p.id).then(async (thu1) => {
-      tile.classList.remove("loading");
-      let mainUrl = thu1;
-      if (!mainUrl) {
-        // thu1이 없으면 기존처럼 번호 매긴 첫 "이미지"로 대체 (동영상은 썸네일로 못 씀)
-        const media = await getProjectImages(p.id);
-        const firstImage = media.find((m) => m.type === "image");
-        mainUrl = firstImage ? firstImage.url : null;
-      }
-      if (!mainUrl) {
-        tile.classList.add("is-placeholder");
-        tile.insertAdjacentHTML(
-          "afterbegin",
-          `<span class="placeholder-path">${projectBase(p.id)}/thu1.* (또는 1.*)</span>`
-        );
-        return;
-      }
-      const img = document.createElement("img");
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.src = mainUrl;
-      img.alt = p.label;
-      tile.prepend(img);
+  for (let start = 0; start < PROJECTS.length; start += GRID_ROW_SIZE) {
+    const rowProjects = PROJECTS.slice(start, start + GRID_ROW_SIZE);
+    const row = document.createElement("div");
+    row.className = "grid-row";
+    grid.appendChild(row);
+
+    rowProjects.forEach((p) => {
+      const tile = document.createElement("a");
+      tile.href = `#work/${p.id}`;
+      tile.className = "tile loading";
+      tile.style.setProperty("--ratio", p.ratio || 1);
+      tile.innerHTML = `
+        <div class="tile-overlay">
+          <span class="tile-index">${p.date}</span>
+          <span class="tile-name">${p.label}</span>
+          <span class="tile-cat">${p.category}</span>
+        </div>
+      `;
+      tile.addEventListener("click", (e) => {
+        e.preventDefault();
+        openDetail(p.id);
+        history.pushState(null, "", `#work/${p.id}`);
+      });
+      row.appendChild(tile);
+
+      getProjectThumb(p.id).then(async (thu1) => {
+        tile.classList.remove("loading");
+        let mainUrl = thu1;
+        if (!mainUrl) {
+          // thu1이 없으면 기존처럼 번호 매긴 첫 "이미지"로 대체 (동영상은 썸네일로 못 씀)
+          const media = await getProjectImages(p.id);
+          const firstImage = media.find((m) => m.type === "image");
+          mainUrl = firstImage ? firstImage.url : null;
+        }
+        if (!mainUrl) {
+          tile.classList.add("is-placeholder");
+          tile.insertAdjacentHTML(
+            "afterbegin",
+            `<span class="placeholder-path">${projectBase(p.id)}/thu1.* (또는 1.*)</span>`
+          );
+          return;
+        }
+        const img = document.createElement("img");
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.src = mainUrl;
+        img.alt = p.label;
+        tile.prepend(img);
+      });
     });
-  });
+  }
 }
 
 /* hero banner: 이미지/동영상 확장자를 모두 탐색해서, 찾은 쪽만 보여준다. */
