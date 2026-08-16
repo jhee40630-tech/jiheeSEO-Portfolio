@@ -176,7 +176,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
      (양쪽 축이 모두 definite해짐), 같은 줄 안의 가로 폭 비율은 기존과 동일하게 유지된다.
      30vh 기준: 상단 padding·섹션 헤더를 제외한 나머지 화면에 대략 2.5줄이 들어온다. */
   .grid .tile{
-    height:clamp(260px, 33vh, 450px);
+    height:clamp(317px, 40vh, 549px);
   }
 }
 
