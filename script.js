@@ -23,15 +23,15 @@
      더 이상 찾을 수 없는 지점에서 자동으로 멈춥니다.
    ========================================================= */
 const PROJECTS = [
-  { id: "10Desert",           label: "Desert",           category: "Environment",  ratio: 16 / 9,  desc: "사막 지형의 라이팅과 대기 표현.",           date: "2026.08", period: "2026.07 – 2026.08", role: "Environment / Lighting",  scope: "Personal", focus: "Atmosphere",       pipeline: "Blender · World Machine" },
-  { id: "09Gate",              label: "Gate",              category: "Environment",  ratio: 16 / 9,  desc: "관문 구조물의 스케일과 디테일 스터디.",       date: "2026.03", period: "2026.02 – 2026.03", role: "Modeling / Lookdev",       scope: "Personal", focus: "Architecture",      pipeline: "Blender · Substance" },
-  { id: "06Pillar",            label: "Pillar",            category: "Environment",  ratio: 9 / 16,  desc: "고대 건축 기둥의 마모와 질감을 재현.",        date: "2026.09", period: "2026.08 – 2026.09", role: "Sculpting / Texturing",    scope: "Personal", focus: "Weathering",        pipeline: "ZBrush · Substance" },
-  { id: "08Trebuchet",         label: "Trebuchet",         category: "Hard Surface", ratio: 1.4,     desc: "투석기 메커니즘을 기능적으로 모델링.",        date: "2025.11", period: "2025.10 – 2025.11", role: "Modeling",                 scope: "Personal", focus: "Mechanical",        pipeline: "Blender" },
-  { id: "07Alley",             label: "Alley",             category: "Environment",  ratio: 1,       desc: "좁은 골목의 분위기와 조명을 다룬 씬.",        date: "2026.09", period: "2026.08 – 2026.09", role: "Modeling / Lighting",      scope: "Personal", focus: "Mood & Lighting",   pipeline: "Blender · Substance" },
-  { id: "05Computer",          label: "Computer",          category: "Prop",         ratio: 1,       desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.",   date: "2025.04", period: "2025.03 – 2025.04", role: "Modeling / Texturing",     scope: "Personal", focus: "Prop Design",       pipeline: "Blender · Substance" },
-  { id: "04Sci-fi Container",  label: "Sci-fi Container",  category: "Hard Surface", ratio: 1,       desc: "SF 세계관의 컨테이너 구조물 디자인.",        date: "2025.06", period: "2025.05 – 2025.06", role: "Modeling / Lookdev",       scope: "Personal", focus: "Hard Surface",      pipeline: "Blender · Substance" },
-  { id: "02House",             label: "House",             category: "Environment",  ratio: 16 / 9,  desc: "주거 공간의 구조와 채광을 스터디한 씬.",      date: "2024.06", period: "2024.05 – 2024.06", role: "Modeling / Texturing",     scope: "Personal", focus: "Interior",          pipeline: "Blender · Substance" },
-  { id: "03Zbrush",            label: "Zbrush",            category: "Sculpt",       ratio: 1,       desc: "유기적 형태 스컬프팅 연습 시리즈.",          date: "2025.05", period: "2025.05 – 진행중",   role: "Sculpting",                scope: "Personal", focus: "Organic Form",      pipeline: "ZBrush · KeyShot" },
+  { id: "10Desert",           label: "Desert",           category: "Environment",  ratio: 16 / 9,  desc: "사막 지형의 라이팅과 대기 표현.",           date: "2026.08", period: "2026.04 – 2026.08", role: "Environment / Lighting",  scope: "Personal", focus: "Atmosphere",       pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "09Gate",              label: "Gate",              category: "Environment",  ratio: 16 / 9,  desc: "관문 구조물의 스케일과 디테일 스터디.",       date: "2026.04", period: "2026.01 – 2026.04", role: "Modeling / Lookdev",       scope: "Personal", focus: "Architecture",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "06Pillar",            label: "Pillar",            category: "Environment",  ratio: 9 / 16,  desc: "고대 건축 기둥의 마모와 질감을 재현.",        date: "2026.01", period: "2025.12 – 2026.01", role: "Sculpting / Texturing",    scope: "Personal", focus: "Weathering",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "08Trebuchet",         label: "Trebuchet",         category: "Hard Surface", ratio: 1.4,     desc: "투석기 메커니즘을 기능적으로 모델링.",        date: "2025.12", period: "2025.10 – 2025.12", role: "Modeling",                 scope: "Personal", focus: "Mechanical",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "07Alley",             label: "Alley",             category: "Environment",  ratio: 1,       desc: "좁은 골목의 분위기와 조명을 다룬 씬.",        date: "2025.10", period: "2025.09 – 2025.10", role: "Modeling / Lighting",      scope: "Personal", focus: "Mood & Lighting",   pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "05Computer",          label: "Computer",          category: "Prop",         ratio: 1,       desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.",   date: "2025.09", period: "2025.08 – 2025.09", role: "Modeling / Texturing",     scope: "Personal", focus: "Prop Design",       pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "04Sci-fi Container",  label: "Sci-fi Container",  category: "Hard Surface", ratio: 1,       desc: "SF 세계관의 컨테이너 구조물 디자인.",        date: "2025.08", period: "2025.07 – 2025.08", role: "Modeling / Lookdev",       scope: "Personal", focus: "Hard Surface",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "02House",             label: "House",             category: "Environment",  ratio: 16 / 9,  desc: "주거 공간의 구조와 채광을 스터디한 씬.",      date: "2025.07", period: "2025.03 – 2025.07", role: "Modeling / Texturing",     scope: "Personal", focus: "Interior",          pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "03Zbrush",            label: "Zbrush",            category: "Sculpt",       ratio: 1,       desc: "유기적 형태 스컬프팅 연습 시리즈.",          date: "2025.05", period: "2025.05 – 진행중",   role: "Sculpting",                scope: "Personal", focus: "Organic Form",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
 ];
 
 /* 한 줄에 몇 개씩 넣을지 (기존과 동일하게 3개씩 끊어서 한 줄). 순서를 유지한 채
@@ -374,6 +374,11 @@ const detailNext = document.getElementById("detail-next");
 const detailNextProject = document.getElementById("detail-next-project");
 const detailNextProjectName = document.getElementById("detail-next-project-name");
 
+const zoomOverlay = document.getElementById("zoom-overlay");
+const zoomViewport = document.getElementById("zoom-viewport");
+const zoomImg = document.getElementById("zoom-img");
+const zoomClose = document.getElementById("zoom-close");
+
 let currentProject = null;
 let currentImages = [];
 let currentIndex = 0;
@@ -391,6 +396,7 @@ function goToProject(offset) {
 }
 
 async function openDetail(id) {
+  closeZoom();
   const project = ALL_PROJECTS.find((p) => p.id === id);
   if (!project) return;
   currentProject = project;
@@ -490,7 +496,105 @@ function showImage(i) {
   });
 }
 
+/* ===================== ZOOM / PAN (상세페이지 메인 이미지 클릭 → 확대 후 드래그로 이동) =====================
+   클릭하면 이미지를 화면 가득 채우는 뷰로 확대하고(ZOOM_SCALE배), 마우스/터치로 누른 채
+   끌면 확대된 이미지 안에서 보이는 부분이 이동한다. 이미지가 화면보다 작아지는 방향으로는
+   못 움직이게 매 프레임 범위를 계산해서 clamp한다. */
+const ZOOM_SCALE = 2.2;
+let zoomPanX = 0;
+let zoomPanY = 0;
+let zoomDragging = false;
+let zoomMoved = false;
+let zoomStartX = 0;
+let zoomStartY = 0;
+let zoomStartPanX = 0;
+let zoomStartPanY = 0;
+
+function zoomClampBounds() {
+  const viewportRect = zoomViewport.getBoundingClientRect();
+  // transform 적용 전 레이아웃 크기(= object-fit:contain으로 화면에 맞춰진 크기) 기준으로
+  // ZOOM_SCALE을 곱해서 "확대된 실제 렌더 크기"를 구한다.
+  const baseW = zoomImg.offsetWidth;
+  const baseH = zoomImg.offsetHeight;
+  const scaledW = baseW * ZOOM_SCALE;
+  const scaledH = baseH * ZOOM_SCALE;
+  const maxX = Math.max(0, (scaledW - viewportRect.width) / 2);
+  const maxY = Math.max(0, (scaledH - viewportRect.height) / 2);
+  return { maxX, maxY };
+}
+
+function zoomApplyTransform() {
+  zoomImg.style.transform = `translate(${zoomPanX}px, ${zoomPanY}px) scale(${ZOOM_SCALE})`;
+}
+
+function openZoom(src) {
+  if (!src) return;
+  zoomImg.src = src;
+  zoomPanX = 0;
+  zoomPanY = 0;
+  zoomApplyTransform();
+  zoomOverlay.classList.add("is-open");
+  zoomOverlay.setAttribute("aria-hidden", "false");
+}
+
+function closeZoom() {
+  zoomOverlay.classList.remove("is-open");
+  zoomOverlay.setAttribute("aria-hidden", "true");
+}
+
+detailImg.addEventListener("click", () => {
+  if (detailImg.style.display === "none" || !detailImg.src) return;
+  openZoom(detailImg.src);
+});
+
+zoomViewport.addEventListener("pointerdown", (e) => {
+  zoomDragging = true;
+  zoomMoved = false;
+  zoomStartX = e.clientX;
+  zoomStartY = e.clientY;
+  zoomStartPanX = zoomPanX;
+  zoomStartPanY = zoomPanY;
+  zoomViewport.classList.add("is-dragging");
+  zoomViewport.setPointerCapture(e.pointerId);
+});
+
+zoomViewport.addEventListener("pointermove", (e) => {
+  if (!zoomDragging) return;
+  const dx = e.clientX - zoomStartX;
+  const dy = e.clientY - zoomStartY;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) zoomMoved = true;
+  const { maxX, maxY } = zoomClampBounds();
+  zoomPanX = Math.min(maxX, Math.max(-maxX, zoomStartPanX + dx));
+  zoomPanY = Math.min(maxY, Math.max(-maxY, zoomStartPanY + dy));
+  zoomApplyTransform();
+});
+
+function endZoomDrag(e) {
+  if (!zoomDragging) return;
+  zoomDragging = false;
+  zoomViewport.classList.remove("is-dragging");
+  // 드래그로 이동하지 않고 그냥 클릭만 했으면(=거의 안 움직였으면) 확대를 닫는다.
+  if (!zoomMoved) closeZoom();
+}
+zoomViewport.addEventListener("pointerup", endZoomDrag);
+zoomViewport.addEventListener("pointercancel", endZoomDrag);
+
+zoomClose.addEventListener("click", closeZoom);
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && zoomOverlay.classList.contains("is-open")) closeZoom();
+});
+
+window.addEventListener("resize", () => {
+  if (!zoomOverlay.classList.contains("is-open")) return;
+  const { maxX, maxY } = zoomClampBounds();
+  zoomPanX = Math.min(maxX, Math.max(-maxX, zoomPanX));
+  zoomPanY = Math.min(maxY, Math.max(-maxY, zoomPanY));
+  zoomApplyTransform();
+});
+
 function closeDetail() {
+  closeZoom();
   detail.classList.remove("is-open");
   detail.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
@@ -506,6 +610,7 @@ detailNext.addEventListener("click", () => goToProject(1));
 
 window.addEventListener("keydown", (e) => {
   if (!detail.classList.contains("is-open")) return;
+  if (zoomOverlay.classList.contains("is-open")) return; // 확대 뷰가 열려 있으면 상세페이지 단축키는 잠시 무시
   if (e.key === "Escape") closeDetail();
   if (e.key === "ArrowRight") goToProject(1);
   if (e.key === "ArrowLeft") goToProject(-1);
