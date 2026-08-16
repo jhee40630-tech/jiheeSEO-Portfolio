@@ -504,7 +504,6 @@ const ZOOM_SCALE = 2.2;
 let zoomPanX = 0;
 let zoomPanY = 0;
 let zoomDragging = false;
-let zoomMoved = false;
 let zoomStartX = 0;
 let zoomStartY = 0;
 let zoomStartPanX = 0;
@@ -547,22 +546,35 @@ detailImg.addEventListener("click", () => {
   openZoom(detailImg.src);
 });
 
-zoomViewport.addEventListener("pointerdown", (e) => {
+/* 브라우저 기본 이미지 드래그(HTML5 dragstart)를 완전히 차단.
+   이게 살아있으면 pointerdown 이후 브라우저가 네이티브 드래그를 가로채서
+   pointermove가 더 이상 발생하지 않고, 커서가 "금지" 아이콘으로 바뀌며,
+   mouseup 시 우리 쪽에서는 "이동이 없었다"고 오판하는 문제가 생긴다. */
+zoomImg.draggable = false;
+zoomImg.addEventListener("dragstart", (e) => e.preventDefault());
+
+/* ---- pan(드래그 이동): 이미지 자체에서 시작해서 이미지 자체에서 끝난다 ----
+   setPointerCapture로 캡처해두면 커서가 이미지 밖으로 나가도 pointermove/up이
+   계속 이 요소로 전달되므로 드래그가 끊기지 않는다. */
+zoomImg.addEventListener("pointerdown", (e) => {
+  if (e.button !== undefined && e.button !== 0) return; // 좌클릭만 pan으로 처리
+  e.preventDefault();
+  e.stopPropagation();
   zoomDragging = true;
-  zoomMoved = false;
   zoomStartX = e.clientX;
   zoomStartY = e.clientY;
   zoomStartPanX = zoomPanX;
   zoomStartPanY = zoomPanY;
-  zoomViewport.classList.add("is-dragging");
-  zoomViewport.setPointerCapture(e.pointerId);
+  zoomImg.classList.add("is-dragging");
+  zoomImg.setPointerCapture(e.pointerId);
 });
 
-zoomViewport.addEventListener("pointermove", (e) => {
+zoomImg.addEventListener("pointermove", (e) => {
   if (!zoomDragging) return;
+  e.preventDefault();
+  e.stopPropagation();
   const dx = e.clientX - zoomStartX;
   const dy = e.clientY - zoomStartY;
-  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) zoomMoved = true;
   const { maxX, maxY } = zoomClampBounds();
   zoomPanX = Math.min(maxX, Math.max(-maxX, zoomStartPanX + dx));
   zoomPanY = Math.min(maxY, Math.max(-maxY, zoomStartPanY + dy));
@@ -572,12 +584,25 @@ zoomViewport.addEventListener("pointermove", (e) => {
 function endZoomDrag(e) {
   if (!zoomDragging) return;
   zoomDragging = false;
-  zoomViewport.classList.remove("is-dragging");
-  // 드래그로 이동하지 않고 그냥 클릭만 했으면(=거의 안 움직였으면) 확대를 닫는다.
-  if (!zoomMoved) closeZoom();
+  zoomImg.classList.remove("is-dragging");
+  e.stopPropagation();
+  // 드래그를 끝내도(=마우스를 놓아도) 확대창은 절대 닫히지 않는다 — 닫기는
+  // CLOSE 버튼 또는 이미지 바깥 빈 배경 클릭에서만 일어난다.
 }
-zoomViewport.addEventListener("pointerup", endZoomDrag);
-zoomViewport.addEventListener("pointercancel", endZoomDrag);
+zoomImg.addEventListener("pointerup", endZoomDrag);
+zoomImg.addEventListener("pointercancel", endZoomDrag);
+
+/* 드래그 뒤에 브라우저가 추가로 발생시키는 click 이벤트가 배경 클릭 닫기 로직으로
+   전달되지 않도록 이미지 위에서 멈춘다. */
+zoomImg.addEventListener("click", (e) => e.stopPropagation());
+
+/* ---- backdrop(빈 배경) 클릭으로 닫기 ----
+   zoom-img는 pointer-events가 켜져 있어 이미지 위 클릭은 target이 zoom-img가 되고,
+   이미지 바깥(뷰포트의 빈 여백)을 클릭하면 target이 zoom-viewport 자기 자신이 된다.
+   그래서 target === currentTarget일 때만, 즉 진짜 빈 배경을 직접 클릭했을 때만 닫는다. */
+zoomViewport.addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) closeZoom();
+});
 
 zoomClose.addEventListener("click", closeZoom);
 
