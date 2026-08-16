@@ -74,7 +74,10 @@ const ALL_PROJECTS = [...PROJECTS, ...UNIVERSITY_ITEMS];
 
 // images/ 폴더 바로 아래에 Personal 폴더가 있는 실제 구조를 반영
 const IMAGE_ROOT = "images/Personal";
-const EXTENSIONS = ["png", "jpg", "jpeg", "webp", "PNG", "JPG", "JPEG"];
+// webp를 가장 먼저 시도 — 같은 번호에 png/jpg와 webp가 둘 다 있으면(지금 폴더처럼)
+// 항상 더 가벼운 webp가 우선 채택된다. find(Boolean)이 배열 "순서"대로 첫 매치를
+// 고르기 때문에, 실제로 어느 확장자가 먼저 응답했는지와 무관하게 이 순서가 그대로 우선순위가 된다.
+const EXTENSIONS = ["webp", "WEBP", "png", "jpg", "jpeg", "PNG", "JPG", "JPEG"];
 const VIDEO_EXTENSIONS = ["mp4", "webm", "mov", "MP4", "WEBM", "MOV"];
 const MAX_PROBE = 60; // 폴더당 최대 탐색 장수 (안전 상한)
 const PROBE_BATCH = 6; // 슬라이드 번호를 한 번에 몇 개씩 병렬로 탐색할지 (로딩 속도 최적화)
@@ -141,23 +144,68 @@ async function resolveImageUrl(base, n) {
   return hits.find(Boolean) || null;
 }
 
+/** n번 슬롯을, 이미 알아낸 확장자(knownExt/knownVideoExt) 하나로만 먼저 시도한다(요청 1개).
+    실패하면 그때만 모든 확장자를 다시 훑는(resolveMediaUrl) 예외 처리로 넘어간다.
+    → 폴더 안 파일들이 대개 같은 확장자를 쓰는 실제 상황에서, 슬롯마다 7종 확장자를
+    전부(=최대 13개 요청) 동시에 쏘고 그 중 가장 느린 404까지 기다리던 예전 방식보다
+    요청 수가 수십 배 줄어 상세페이지 진입 속도가 크게 빨라진다. */
+async function resolveSlotFast(base, n, known) {
+  if (known.ext) {
+    const url = `${base}/${n}.${known.ext}`;
+    if (await probeImage(url)) return { url, type: "image" };
+  }
+  if (known.videoExt) {
+    const url = `${base}/${n}.${known.videoExt}`;
+    if (await probeVideo(url)) return { url, type: "video" };
+  }
+  // 알려진 확장자로 못 찾았을 때만 전체 확장자를 탐색 (드문 예외 케이스 대비)
+  const found = await resolveMediaUrl(base, n);
+  if (found) {
+    const ext = found.url.split(".").pop();
+    if (found.type === "image") known.ext = ext;
+    else known.videoExt = ext;
+  }
+  return found;
+}
+
 /** 프로젝트 폴더 안의 이미지/동영상 전체를 순서대로 탐색해서 { url, type } 배열로 반환.
-    번호들을 PROBE_BATCH 개씩 묶어서 동시에 탐색하고, 묶음 안에서 빈 번호를 만나면 그 지점에서 멈춘다
-    (사진과 동영상이 섞여 있어도 됨). */
+    1번 슬롯에서만 확장자 후보 전부를 시도해서 실제 사용 중인 확장자를 알아내고,
+    그 뒤 슬롯들은 그 확장자 하나로만 요청한다(예외가 있으면 그 슬롯만 전체 재탐색).
+    번호들을 PROBE_BATCH 개씩 묶어서 동시에 탐색한다. 중간에 번호가 하나 정도 비어 있어도
+    (예: 11 다음 12가 없고 13부터 다시 있는 경우) 그 자리에서 바로 멈추지 않고, 연속으로
+    GAP_TOLERANCE개 이상 비어 있을 때만 "여기서 끝"이라고 판단해서 멈춘다. */
+const GAP_TOLERANCE = 3;
+
 async function resolveProjectImages(id) {
   const base = projectBase(id);
   const media = [];
-  for (let start = 1; start <= MAX_PROBE; start += PROBE_BATCH) {
+
+  const first = await resolveMediaUrl(base, 1);
+  if (!first) return media;
+  media.push(first);
+
+  const known = { ext: null, videoExt: null };
+  const firstExt = first.url.split(".").pop();
+  if (first.type === "image") known.ext = firstExt;
+  else known.videoExt = firstExt;
+
+  let consecutiveGaps = 0;
+
+  outer:
+  for (let start = 2; start <= MAX_PROBE; start += PROBE_BATCH) {
     const batchNums = [];
     for (let n = start; n < start + PROBE_BATCH && n <= MAX_PROBE; n++) batchNums.push(n);
     // eslint-disable-next-line no-await-in-loop
-    const results = await Promise.all(batchNums.map((n) => resolveMediaUrl(base, n)));
-    let hitGap = false;
+    const results = await Promise.all(batchNums.map((n) => resolveSlotFast(base, n, known)));
     for (const item of results) {
-      if (!item) { hitGap = true; break; }
-      media.push(item);
+      if (item) {
+        media.push(item);
+        consecutiveGaps = 0;
+      } else {
+        consecutiveGaps++;
+        if (consecutiveGaps >= GAP_TOLERANCE) break outer;
+      }
     }
-    if (hitGap) break;
   }
   return media;
 }
@@ -263,6 +311,10 @@ function buildGrid() {
         openDetail(p.id);
         history.pushState(null, "", `#work/${p.id}`);
       });
+      // 마우스를 올리거나(데스크톱) 터치를 시작하는(모바일) 순간 미리 이미지 목록을 탐색/로드해둔다.
+      // 클릭했을 때는 이미 다 준비돼 있어 상세페이지가 거의 즉시 열리는 것처럼 느껴진다.
+      tile.addEventListener("pointerenter", () => getProjectImages(p.id), { once: true });
+      tile.addEventListener("touchstart", () => getProjectImages(p.id), { once: true, passive: true });
       row.appendChild(tile);
 
       getProjectThumb(p.id).then(async (thu1) => {
@@ -333,6 +385,8 @@ function buildUniversityDuo() {
       openDetail(p.id);
       history.pushState(null, "", `#work/${p.id}`);
     });
+    tile.addEventListener("pointerenter", () => getProjectImages(p.id), { once: true });
+    tile.addEventListener("touchstart", () => getProjectImages(p.id), { once: true, passive: true });
     universityDuo.appendChild(tile);
 
     getUniversityThumb(p.id).then(async (thu1) => {
@@ -420,10 +474,27 @@ async function openDetail(id) {
   detail.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
 
-  detailFrame.classList.add("loading");
   detailThumbs.innerHTML = "";
+
+  // 그리드 썸네일은 페이지가 열릴 때 이미 로드돼 브라우저에 캐시돼 있으므로,
+  // 실제 이미지 목록(currentImages)이 다 준비되기를 기다리는 동안 그 썸네일을
+  // 먼저 즉시 보여준다. 그러면 "빈 화면 + 로딩 스피너"가 아니라 뭔가 바로 보여서
+  // 체감 로딩 시간이 훨씬 짧게 느껴진다. 실제 이미지가 준비되면 바로 교체된다.
+  const quickThumb =
+    (await (thumbCache.get(`${id}::thu1`) || universityThumbCache.get(id))) || null;
+  if (quickThumb) {
+    detailVideo.pause();
+    detailVideo.style.display = "none";
+    detailImg.style.display = "block";
+    detailImg.src = quickThumb;
+    detailFrame.classList.add("is-preview");
+  } else {
+    detailFrame.classList.add("loading");
+  }
+
   currentImages = await getProjectImages(id);
   detailFrame.classList.remove("loading");
+  detailFrame.classList.remove("is-preview");
 
   if (currentImages.length === 0) {
     detailImg.removeAttribute("src");

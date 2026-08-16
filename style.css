@@ -114,17 +114,24 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 /* ===== WORKS / GRID ===== */
 .works{padding:14vh var(--edge) 10vh;}
 .section-head{
-  display:flex; align-items:baseline; justify-content:space-between;
+  display:flex; align-items:flex-end; justify-content:space-between;
   flex-wrap:wrap; gap:10px;
   border-bottom:1px solid var(--line);
   padding-bottom:18px; margin-bottom:34px;
+}
+.section-head-title{
+  display:flex; flex-direction:column; gap:10px;
 }
 .section-head h2{
   font-family:var(--f-display); font-weight:600;
   font-size:clamp(36px, 5vw, 64px); letter-spacing:.04em;
   color:var(--rust-soft);
 }
-.section-head p{
+.section-head-tag{
+  font-family:var(--f-mono); font-size:13px; letter-spacing:.14em;
+  color:#fff; text-transform:uppercase;
+}
+.section-head-note{
   font-family:var(--f-mono); font-size:13px; color:var(--text-faint);
 }
 
@@ -313,9 +320,14 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   font-family:var(--f-mono); font-size:13px; letter-spacing:.06em;
   color:var(--text-faint); margin-top:20px;
 }
-.about-bio{
-  font-family:var(--f-body); font-size:17px; line-height:1.7;
-  color:var(--text-dim); margin-top:22px; max-width:520px;
+.about-bio-lead{
+  font-family:var(--f-body); font-weight:500;
+  font-size:clamp(19px, 2.1vw, 24px); line-height:1.5;
+  color:var(--text); margin-top:24px; max-width:520px;
+}
+.about-bio-detail{
+  font-family:var(--f-body); font-size:14px; line-height:1.7;
+  color:var(--text-dim); margin-top:16px; max-width:480px;
 }
 .about-photo{
   width:190px; height:230px; flex-shrink:0;
@@ -410,6 +422,14 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 .detail-frame img{cursor:zoom-in;}
 #detail-video{display:none;}
 @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+
+/* 실제 이미지가 준비되는 동안, 그리드에서 이미 로드해둔 썸네일을 살짝 흐리게 먼저
+   보여주는 상태 — 빈 화면 대신 무언가 바로 보이게 해서 체감 로딩을 줄인다. */
+.detail-frame.is-preview img{
+  filter:blur(10px) brightness(.85);
+  transform:scale(1.03);
+  transition:filter .35s ease, transform .35s ease;
+}
 
 .detail-nav{
   position:absolute; top:50%; transform:translateY(-50%);
