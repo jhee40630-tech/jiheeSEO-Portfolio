@@ -397,6 +397,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   max-width:100%; max-height:100%; object-fit:contain;
   animation:fadeIn .4s ease;
 }
+.detail-frame img{cursor:zoom-in;}
 #detail-video{display:none;}
 @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
 
@@ -491,6 +492,49 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 .detail-next-project .arrow{margin-left:auto; color:var(--rust-soft); transition:.2s;}
 .detail-next-project:hover .arrow{transform:translateX(4px);}
+
+/* ===== ZOOM / PAN OVERLAY =====
+   상세페이지 메인 이미지를 클릭하면 화면 전체를 채우는 확대 뷰가 열리고,
+   마우스(또는 터치)로 드래그해서 확대된 이미지 안을 이동하며 볼 수 있다. */
+.zoom-overlay{
+  position:fixed; inset:0; z-index:200;
+  background:#000;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s ease;
+}
+.zoom-overlay.is-open{opacity:1; pointer-events:auto;}
+
+.zoom-close{
+  position:absolute; top:20px; left:20px; z-index:5;
+  padding:10px 18px;
+  border:1px solid var(--line);
+  background:rgba(14,13,12,.6);
+  font-family:var(--f-mono); font-size:12px; letter-spacing:.1em;
+  color:var(--text-dim);
+  transition:.2s;
+}
+.zoom-close:hover{color:#fff; border-color:var(--rust-soft);}
+
+.zoom-viewport{
+  position:relative;
+  width:100%; height:100%;
+  overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  cursor:grab;
+  touch-action:none; /* 브라우저 기본 터치 스크롤/줌 대신 직접 드래그를 처리 */
+}
+.zoom-viewport.is-dragging{cursor:grabbing;}
+
+#zoom-img{
+  max-width:100%; max-height:100%;
+  width:auto; height:auto;
+  object-fit:contain;
+  transform-origin:center center;
+  will-change:transform;
+  user-select:none;
+  -webkit-user-drag:none;
+  pointer-events:none; /* 드래그 대상은 img가 아니라 뷰포트 전체 */
+}
 
 /* ===== FOOTER ===== */
 .footer{padding:8vh var(--edge) 6vh; border-top:1px solid var(--line);}
