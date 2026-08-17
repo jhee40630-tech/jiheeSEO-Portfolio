@@ -154,6 +154,17 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   gap:10px;
 }
 
+/* 썸네일 "박스"의 가로세로 비율은 이미지 원본 비율(--ratio)과 더 이상 같지 않다.
+   --box-flatten(1보다 큰 상수)만큼 곱해서 박스를 더 납작(=더 낮게)하게 만들고,
+   이미지는 object-fit:cover로 그 박스를 꽉 채우면서 위아래 남는 부분만 크롭한다.
+   이미지 자체는 절대 늘어나거나 눌리지 않는다 — object-fit:cover는 원본 비율을
+   그대로 유지한 채 박스보다 큰 쪽을 잘라낼 뿐, 압축/왜곡이 없다.
+   1.35라는 값은 "데스크톱에서 WORKS가 약 2.5줄 보이도록" 고른 상수이며, 필요하면
+   이 숫자만 조절하면 전체 썸네일 높이가 일괄적으로 낮아지거나 높아진다. */
+:root{
+  --box-flatten: 1.35;
+}
+
 .tile{
   position:relative; overflow:hidden;
   background:var(--panel);
@@ -163,28 +174,31 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   flex-shrink:1;
   flex-basis:0;
   min-width:0;
-  aspect-ratio:var(--ratio, 1);
+  aspect-ratio:calc(var(--ratio, 1) * var(--box-flatten));
 }
 
-/* 모든 화면 크기에서 각 타일의 가로세로 비율(--ratio, script.js PROJECTS에서 지정)은
-   절대 바뀌지 않는다. height를 별도로 고정하거나 aspect-ratio를 다른 값으로 덮어쓰면
-   "폭만 줄고 비율은 유지되지 않는" 문제가 생기므로, 모든 브레이크포인트에서
-   .tile은 오직 aspect-ratio:var(--ratio, 1) 하나로만 높이를 결정한다(위 기본 .tile 규칙).
-   즉 창 폭이 줄면 flex-grow로 정해지는 폭이 줄고, aspect-ratio가 그 줄어든 폭에 맞춰
-   높이를 같은 비율로 자동으로 줄인다 — 폭과 높이가 항상 같은 비율로 함께 작아진다. */
+/* 박스 비율(위의 aspect-ratio)은 --ratio와 --box-flatten이라는 두 상수의 곱으로만
+   정해지고, 뷰포트 크기(vw/vh)는 전혀 관여하지 않는다. 그래서 창 폭이 줄면
+   flex-grow로 정해지는 폭이 줄고, aspect-ratio가 그 줄어든 폭에 맞춰 높이를
+   "정확히 같은 박스 비율"로 자동으로 줄인다 — 폭과 높이가 항상 같은 비율로
+   함께 작아질 뿐, 박스 비율 자체가 다시 세로로 길어지거나 다른 값으로 바뀌는
+   일은 없다. 아래 브레이크포인트들은 한 줄에 몇 개씩 배치할지(wrap)만 바꾸고,
+   height/aspect-ratio는 절대 건드리지 않는다. */
 @media(max-width:900px){
   /* 좁은 화면에서는 한 줄에 3개씩 두면 세로형(Pillar) 등이 너무 좁아지므로,
-     줄을 접어서(wrap) 한 줄에 2개씩만 배치한다. 비율(aspect-ratio)은 그대로 var(--ratio)를 쓴다. */
+     줄을 접어서(wrap) 한 줄에 2개씩만 배치한다. 박스 비율(aspect-ratio)은 그대로
+     calc(var(--ratio) * var(--box-flatten))를 쓴다. */
   .grid-row{flex-wrap:wrap;}
   .tile{flex:1 1 calc(50% - 5px);}
 }
 @media(max-width:520px){
-  /* 가장 좁은 화면에서는 한 줄에 1개씩만 배치한다. 비율은 여전히 var(--ratio) 그대로. */
+  /* 가장 좁은 화면에서는 한 줄에 1개씩만 배치한다. 박스 비율은 여전히 동일한 계산식 그대로. */
   .tile{flex-basis:100%;}
 }
 
 .tile img{
-  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; object-position:center;
   transition:transform .6s cubic-bezier(.2,.7,.2,1);
 }
 /* 마우스를 올려도 이미지 자체는 바뀌지 않고, 같은 이미지가 살짝 확대되기만 한다 */
