@@ -22,6 +22,22 @@
      1.png → 1.jpg → 1.jpeg → 1.webp → 1.PNG ... 순서로 찾고,
      더 이상 찾을 수 없는 지점에서 자동으로 멈춥니다.
    ========================================================= */
+/* ===================== HERO 배너 비율 고정 =====================
+   .hero의 세로 높이를 100svh처럼 뷰포트 높이에 고정해버리면, 창의 가로폭만
+   줄였을 때 세로 높이는 그대로 남아서 배너가 통째로 작아지지 않는다(오히려
+   상대적으로 더 길쭉해지면서 영상 crop만 달라진다). 그래서 페이지가 처음 열린
+   시점의 가로:세로 비율을 딱 한 번만 계산해서 --hero-ratio로 심어두고, style.css의
+   .hero{ aspect-ratio: var(--hero-ratio) } 가 이 비율을 그대로 유지한다.
+   리사이즈될 때마다 다시 계산하지 않는 게 핵심 — 그래야 창 폭을 줄이면 처음
+   비율 그대로 세로 높이도 폭에 비례해서 함께 줄어든다. */
+(function lockHeroAspectRatio() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  if (w > 0 && h > 0) {
+    document.documentElement.style.setProperty("--hero-ratio", (w / h).toFixed(4));
+  }
+})();
+
 const PROJECTS = [
   { id: "10Desert",           label: "Desert",           category: "Environment",  ratio: 16 / 9,  desc: "사막 지형의 라이팅과 대기 표현.",           date: "2026.08", period: "2026.04 – 2026.08", role: "Environment / Lighting",  scope: "Personal", focus: "Atmosphere",       pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
   { id: "09Gate",              label: "Gate",              category: "Environment",  ratio: 16 / 9,  desc: "관문 구조물의 스케일과 디테일 스터디.",       date: "2026.04", period: "2026.01 – 2026.04", role: "Modeling / Lookdev",       scope: "Personal", focus: "Architecture",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
