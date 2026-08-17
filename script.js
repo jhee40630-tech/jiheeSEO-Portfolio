@@ -24,12 +24,12 @@
    ========================================================= */
 const PROJECTS = [
   { id: "10Desert",           label: "Desert",           category: "Environment",  ratio: 16 / 9,  desc: "사막 지형의 라이팅과 대기 표현.",           date: "2026.08", period: "2026.04 – 2026.08", role: "Environment / Lighting",  scope: "Personal", focus: "Atmosphere",       pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "09Gate",              label: "Gate",              category: "Prop",  ratio: 16 / 9,  desc: "관문 구조물의 스케일과 디테일 스터디.",       date: "2026.04", period: "2026.01 – 2026.04", role: "Modeling / Lookdev",       scope: "Personal", focus: "Architecture",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "06Pillar",            label: "Pillar",            category: "Prop",  ratio: 9 / 16,  desc: "고대 건축 기둥의 마모와 질감을 재현.",        date: "2026.01", period: "2025.12 – 2026.01", role: "Sculpting / Texturing",    scope: "Personal", focus: "Weathering",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "08Trebuchet",         label: "Trebuchet",         category: "Prop", ratio: 1.4,     desc: "투석기 메커니즘을 기능적으로 모델링.",        date: "2025.12", period: "2025.10 – 2025.12", role: "Modeling",                 scope: "Personal", focus: "Mechanical",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "09Gate",              label: "Gate",              category: "Environment",  ratio: 16 / 9,  desc: "관문 구조물의 스케일과 디테일 스터디.",       date: "2026.04", period: "2026.01 – 2026.04", role: "Modeling / Lookdev",       scope: "Personal", focus: "Architecture",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "06Pillar",            label: "Pillar",            category: "Environment",  ratio: 9 / 16,  desc: "고대 건축 기둥의 마모와 질감을 재현.",        date: "2026.01", period: "2025.12 – 2026.01", role: "Sculpting / Texturing",    scope: "Personal", focus: "Weathering",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "08Trebuchet",         label: "Trebuchet",         category: "Hard Surface", ratio: 1.4,     desc: "투석기 메커니즘을 기능적으로 모델링.",        date: "2025.12", period: "2025.10 – 2025.12", role: "Modeling",                 scope: "Personal", focus: "Mechanical",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
   { id: "07Alley",             label: "Alley",             category: "Environment",  ratio: 1,       desc: "좁은 골목의 분위기와 조명을 다룬 씬.",        date: "2025.10", period: "2025.09 – 2025.10", role: "Modeling / Lighting",      scope: "Personal", focus: "Mood & Lighting",   pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
   { id: "05Computer",          label: "Computer",          category: "Prop",         ratio: 1,       desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.",   date: "2025.09", period: "2025.08 – 2025.09", role: "Modeling / Texturing",     scope: "Personal", focus: "Prop Design",       pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "04Sci-fi Container",  label: "Sci-fi Container",  category: "Prop", ratio: 1,       desc: "SF 세계관의 컨테이너 구조물 디자인.",        date: "2025.08", period: "2025.07 – 2025.08", role: "Modeling / Lookdev",       scope: "Personal", focus: "Hard Surface",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "04Sci-fi Container",  label: "Sci-fi Container",  category: "Hard Surface", ratio: 1,       desc: "SF 세계관의 컨테이너 구조물 디자인.",        date: "2025.08", period: "2025.07 – 2025.08", role: "Modeling / Lookdev",       scope: "Personal", focus: "Hard Surface",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
   { id: "02House",             label: "House",             category: "Environment",  ratio: 16 / 9,  desc: "주거 공간의 구조와 채광을 스터디한 씬.",      date: "2025.07", period: "2025.03 – 2025.07", role: "Modeling / Texturing",     scope: "Personal", focus: "Interior",          pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
   { id: "03Zbrush",            label: "Zbrush",            category: "Sculpt",       ratio: 1,       desc: "유기적 형태 스컬프팅 연습 시리즈.",          date: "2025.05", period: "2025.05 – 진행중",   role: "Sculpting",                scope: "Personal", focus: "Organic Form",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
 ];
@@ -292,6 +292,12 @@ function buildGrid() {
     const rowProjects = PROJECTS.slice(start, start + GRID_ROW_SIZE);
     const row = document.createElement("div");
     row.className = "grid-row";
+    // 이 줄에 들어가는 타일들의 ratio 합(R)을 CSS 변수로 심어둔다.
+    // style.css의 .tile aspect-ratio 계산식(ratio / (row-sum * k))이 이 값을 읽어서,
+    // 줄마다 R이 달라도(정사각형/가로형/세로형이 섞여도) 모든 줄의 실제 렌더링 높이가
+    // 항상 똑같아지도록(= containerWidth * k) 만든다.
+    const rowRatioSum = rowProjects.reduce((sum, p) => sum + (p.ratio || 1), 0);
+    row.style.setProperty("--row-sum", rowRatioSum);
     grid.appendChild(row);
 
     rowProjects.forEach((p) => {
