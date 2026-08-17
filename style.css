@@ -138,12 +138,11 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 /* "justified" 그리드 — 3개씩 한 줄(.grid-row), 순서: 10 Desert, 09 Gate, 06 Pillar /
    08 Trebuchet, 07 Alley, 05 Computer / 04 Sci-fi Container, 02 House, 03 Zbrush
    (script.js의 PROJECTS 배열 순서 그대로, GRID_ROW_SIZE개씩 끊어서 줄이 됨).
-   각 타일은 --ratio(가로/세로) 값을 flex-grow로 그대로 사용한다: flex-basis를 0으로
-   두면 남는 폭이 flex-grow 비율대로 나뉘고, aspect-ratio가 그 비율대로 높이를 정하므로
-   "너비 = 비율만큼, 높이 = 같은 줄이면 항상 동일"이 자동으로 성립한다. 그 결과 줄마다
-   폭은 항상 컨테이너 폭과 정확히 같고(= 모든 줄의 좌우 끝이 맞음), 줄 안에서 정사각형·
-   가로형·세로형 타일이 섞여도 같은 줄의 높이는 항상 통일된다. 줄과 줄 사이 높이는
-   서로 달라져도(그 줄에 들어간 비율 합에 따라) 되고, 그게 오히려 밋밋하지 않은 리듬을 만든다. */
+   각 타일의 너비는 --ratio(가로/세로) 값을 flex-grow로 그대로 사용해 그 줄 안에서
+   비율대로 나뉜다(= 모든 줄의 좌우 끝이 항상 컨테이너 폭과 정확히 맞음). 다만 높이는
+   더 이상 각 타일의 --ratio를 그대로 따르지 않고, 아래 .tile 규칙에서 설명하듯 모든
+   줄이 항상 같은 높이가 되도록 별도로 계산한다 — 정사각형·가로형·세로형 타일이
+   섞여 있어도, 그리고 줄마다 들어간 타일의 ratio 합이 달라도 줄 높이는 통일된다. */
 .grid{
   display:flex;
   flex-direction:column;
@@ -154,15 +153,24 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   gap:10px;
 }
 
-/* 썸네일 "박스"의 가로세로 비율은 이미지 원본 비율(--ratio)과 더 이상 같지 않다.
-   --box-flatten(1보다 큰 상수)만큼 곱해서 박스를 더 납작(=더 낮게)하게 만들고,
-   이미지는 object-fit:cover로 그 박스를 꽉 채우면서 위아래 남는 부분만 크롭한다.
-   이미지 자체는 절대 늘어나거나 눌리지 않는다 — object-fit:cover는 원본 비율을
-   그대로 유지한 채 박스보다 큰 쪽을 잘라낼 뿐, 압축/왜곡이 없다.
-   1.35라는 값은 "데스크톱에서 WORKS가 약 2.5줄 보이도록" 고른 상수이며, 필요하면
-   이 숫자만 조절하면 전체 썸네일 높이가 일괄적으로 낮아지거나 높아진다. */
+/* 모든 WORKS 썸네일의 세로 높이를 줄과 무관하게 통일한다.
+   각 줄(.grid-row)의 실제 렌더링 높이는 "containerWidth * --uniform-row-k" 로 고정하고
+   싶은데, 타일의 너비는 여전히 flex-grow:var(--ratio)로 그 줄의 ratio 합(R, JS가
+   --row-sum으로 심어둠)에 비례해서 나뉜다. 특정 타일의 너비는
+     tileWidth = containerWidth * ratio / row-sum
+   이므로, 이 타일의 aspect-ratio(가로/세로)를
+     ratio / (row-sum * k)
+   로 주면
+     tileHeight = tileWidth / aspect-ratio = containerWidth * k
+   가 되어 그 타일이 속한 줄의 ratio 합(row-sum)이 얼마든 항상 같은 높이가 나온다.
+   즉 첫 번째 줄, 두 번째 줄, 세 번째 줄 모두 정확히 같은 높이로 렌더링된다.
+   --uniform-row-k는 뷰포트 크기와 무관한 순수 상수이므로, 창 폭이 줄어도 이 관계는
+   그대로 유지되어 모든 줄의 높이가 항상 같은 비율로 함께 작아진다(다시 세로로
+   길어지거나 줄마다 다른 높이로 벌어지는 일은 없다).
+   0.2(=1/5)는 "이전 대비 첫 줄이 살짝 덜 잘리면서도, 전체적으로 한 화면에 여전히
+   약 2.5줄이 보이는" 밀도를 유지하도록 고른 값이다. */
 :root{
-  --box-flatten: 1.35;
+  --uniform-row-k: 0.2;
 }
 
 .tile{
@@ -174,25 +182,21 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   flex-shrink:1;
   flex-basis:0;
   min-width:0;
-  aspect-ratio:calc(var(--ratio, 1) * var(--box-flatten));
+  aspect-ratio:calc(var(--ratio, 1) / (var(--row-sum, 1) * var(--uniform-row-k)));
 }
 
-/* 박스 비율(위의 aspect-ratio)은 --ratio와 --box-flatten이라는 두 상수의 곱으로만
-   정해지고, 뷰포트 크기(vw/vh)는 전혀 관여하지 않는다. 그래서 창 폭이 줄면
-   flex-grow로 정해지는 폭이 줄고, aspect-ratio가 그 줄어든 폭에 맞춰 높이를
-   "정확히 같은 박스 비율"로 자동으로 줄인다 — 폭과 높이가 항상 같은 비율로
-   함께 작아질 뿐, 박스 비율 자체가 다시 세로로 길어지거나 다른 값으로 바뀌는
-   일은 없다. 아래 브레이크포인트들은 한 줄에 몇 개씩 배치할지(wrap)만 바꾸고,
-   height/aspect-ratio는 절대 건드리지 않는다. */
+/* 아래 브레이크포인트들은 한 줄에 몇 개씩 배치할지(wrap)만 바꾸고, 타일의
+   height/aspect-ratio는 절대 건드리지 않는다 — 그래야 창 폭이 줄어도 모든 타일이
+   위 규칙 하나로만 계산된 동일한 높이 비율을 계속 유지한다. */
 @media(max-width:900px){
   /* 좁은 화면에서는 한 줄에 3개씩 두면 세로형(Pillar) 등이 너무 좁아지므로,
-     줄을 접어서(wrap) 한 줄에 2개씩만 배치한다. 박스 비율(aspect-ratio)은 그대로
-     calc(var(--ratio) * var(--box-flatten))를 쓴다. */
+     줄을 접어서(wrap) 한 줄에 2개씩만 배치한다. 높이 계산식(위 .tile의 aspect-ratio)은
+     그대로 유지되므로 여기서도 모든 줄의 높이는 계속 통일되어 있다. */
   .grid-row{flex-wrap:wrap;}
   .tile{flex:1 1 calc(50% - 5px);}
 }
 @media(max-width:520px){
-  /* 가장 좁은 화면에서는 한 줄에 1개씩만 배치한다. 박스 비율은 여전히 동일한 계산식 그대로. */
+  /* 가장 좁은 화면에서는 한 줄에 1개씩만 배치한다. 높이 계산식은 여전히 동일하게 유지된다. */
   .tile{flex-basis:100%;}
 }
 
