@@ -58,7 +58,15 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 
 /* ===== HERO ===== */
 .hero{
-  position:relative; height:100svh; min-height:560px;
+  position:relative;
+  width:100%;
+  /* --hero-ratio는 script.js가 페이지 로드 시점의 실제 뷰포트 가로:세로 비율을
+     한 번만 계산해서 심어둔다(리사이즈마다 다시 계산하지 않음). 그래서 창의
+     가로폭만 줄여도 이 비율이 그대로 유지된 채 세로 높이가 폭에 비례해서 함께
+     줄어든다 — height:100svh처럼 세로 높이가 창 폭과 무관하게 고정돼 있지 않다.
+     JS가 아직 실행되지 않았거나 값이 없을 때를 대비한 기본값은 16/9. */
+  aspect-ratio: var(--hero-ratio, 16/9);
+  max-height:100svh; /* 창을 다시 넓히거나 세로로 짧은 화면에서 뷰포트보다 커지지 않게 하는 안전장치일 뿐, 축소 동작과는 무관 */
   display:flex; align-items:flex-end;
   overflow:hidden;
 }
@@ -263,27 +271,49 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   border-bottom:1px solid var(--line);
 }
 
-/* 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING) — 16:9 비율은 유지하되,
-   위쪽 WORKS 그리드 타일과 "세로 높이"를 맞춰서 그만큼만 작게, 왼쪽 정렬로 배치한다.
-   grid-template-columns로 폭을 채우던 방식 대신 flex + 고정 height를 써서
-   폭은 aspect-ratio(16/9)가 height에 맞춰 자동으로 정해지게 한다. */
+/* 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING) — 크롭 없이 원본 이미지
+   전체가 그대로 보이도록 하면서, 위쪽 WORKS 그리드 타일과 "세로 높이"만 비슷하게
+   맞춘다. WORKS 그리드는 16:9 같은 고정 비율이 아니라 "타일 높이 = 컨테이너 폭 *
+   --uniform-row-k" 공식으로 계산되기 때문에(위 .tile 관련 주석 참고) 실제로는
+   뷰포트/컨테이너 폭에 비례해서 커지고 줄어든다. 여기서도 고정 vh 대신 vw 기반
+   값을 써서, 창 폭을 줄이면 이 높이도 같은 방식으로 함께 줄어들게 한다. */
 .university-duo{
   display:flex;
   flex-wrap:wrap;
+  align-items:flex-start;
   gap:10px;
   justify-content:flex-start;
 }
 .university-duo .tile{
-  aspect-ratio:16/9;
   width:100%;
+  height:auto;
   flex:0 1 100%;
 }
+.university-duo .tile img{
+  /* 기본 .tile img 규칙(position:absolute + object-fit:cover)은 이미지를 박스에
+     맞춰 잘라내므로 여기서는 취소한다. 대신 이미지를 있는 그대로 흐름에 놓고
+     원본 가로세로 비율을 그대로 유지한 채 전체가 다 보이게 한다. */
+  position:static;
+  display:block;
+  width:100%;
+  height:auto;
+  max-width:100%;
+  object-fit:contain;
+}
 @media(min-width:901px){
-  /* .grid .tile의 높이(clamp(317px,40vh,549px))와 동일하게 맞춘다 */
+  /* 데스크톱: 두 작품을 한 줄에 나란히 배치. 높이를 뷰포트 폭 비례 값으로 고정하고
+     (창을 줄이면 함께 줄어듦) 너비는 각 이미지의 원본 비율을 따라 auto로 둔다 —
+     이미지가 잘리지 않고 전체가 그대로, 통째로 축소되어 보인다. */
   .university-duo .tile{
-    height:clamp(317px, 40vh, 549px);
+    height:clamp(220px, 20vw, 480px);
     width:auto;
+    max-width:100%;
     flex:0 0 auto;
+  }
+  .university-duo .tile img{
+    width:auto;
+    height:100%;
+    max-width:100%;
   }
 }
 
