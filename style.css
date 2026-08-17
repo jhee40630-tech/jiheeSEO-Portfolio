@@ -166,26 +166,21 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   aspect-ratio:var(--ratio, 1);
 }
 
+/* 모든 화면 크기에서 각 타일의 가로세로 비율(--ratio, script.js PROJECTS에서 지정)은
+   절대 바뀌지 않는다. height를 별도로 고정하거나 aspect-ratio를 다른 값으로 덮어쓰면
+   "폭만 줄고 비율은 유지되지 않는" 문제가 생기므로, 모든 브레이크포인트에서
+   .tile은 오직 aspect-ratio:var(--ratio, 1) 하나로만 높이를 결정한다(위 기본 .tile 규칙).
+   즉 창 폭이 줄면 flex-grow로 정해지는 폭이 줄고, aspect-ratio가 그 줄어든 폭에 맞춰
+   높이를 같은 비율로 자동으로 줄인다 — 폭과 높이가 항상 같은 비율로 함께 작아진다. */
 @media(max-width:900px){
-  /* 좁은 화면에서는 비율 그대로 유지하면 세로형(Pillar) 등이 너무 좁아지므로,
-     줄을 접어서(wrap) 한 줄에 2개씩, 비율 대신 통일된 4:3으로 자연스럽게 전환한다. */
+  /* 좁은 화면에서는 한 줄에 3개씩 두면 세로형(Pillar) 등이 너무 좁아지므로,
+     줄을 접어서(wrap) 한 줄에 2개씩만 배치한다. 비율(aspect-ratio)은 그대로 var(--ratio)를 쓴다. */
   .grid-row{flex-wrap:wrap;}
-  .tile{flex:1 1 calc(50% - 5px); aspect-ratio:4/3;}
+  .tile{flex:1 1 calc(50% - 5px);}
 }
 @media(max-width:520px){
-  .tile{flex-basis:100%; aspect-ratio:16/10;}
-}
-
-@media(min-width:901px){
-  /* 데스크톱 큰 화면에서는 aspect-ratio로 정해지는 높이가 너무 커서 첫 화면에
-     줄이 2줄 정도밖에 안 보인다. 가로 폭(=flex-grow 비율)은 그대로 두고,
-     높이만 뷰포트 기준(vh)으로 낮춰서 이미지 위아래를 object-fit:cover로 crop한다.
-     height를 명시하면 aspect-ratio는 더 이상 높이 계산에 관여하지 않으므로
-     (양쪽 축이 모두 definite해짐), 같은 줄 안의 가로 폭 비율은 기존과 동일하게 유지된다.
-     30vh 기준: 상단 padding·섹션 헤더를 제외한 나머지 화면에 대략 2.5줄이 들어온다. */
-  .grid .tile{
-    height:clamp(317px, 40vh, 549px);
-  }
+  /* 가장 좁은 화면에서는 한 줄에 1개씩만 배치한다. 비율은 여전히 var(--ratio) 그대로. */
+  .tile{flex-basis:100%;}
 }
 
 .tile img{
