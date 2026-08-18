@@ -17,6 +17,27 @@
   --edge: clamp(8px, 1vw, 18px);
 }
 
+/* ===== 전역 반응형 타이포그래피 스케일 =====
+   사이트에 있는 모든 font-size(그리고 이 스케일에 맞춰 함께 줄어야 하는 히어로
+   텍스트 간격)는 아래에서 px 대신 rem으로 지정한다. rem은 항상 html의
+   font-size를 기준으로 계산되므로, html의 font-size 하나만 뷰포트 폭에 따라
+   바뀌면 사이트의 모든 글자(로고, 메뉴, 히어로 제목, 섹션 제목, 썸네일 안 글씨,
+   본문, 푸터 등)가 정확히 같은 비율로 함께 커지고 작아진다. 이전에는 요소마다
+   제각각 다른 clamp(...vw...)를 써서 서로 다른 화면 폭에서 서로 다른 속도로
+   줄어들었는데, 그 원인을 여기 한 곳으로 모은 것이다.
+   - 1440px 이상(일반적인 노트북/데스크톱 폭)에서는 16px(=1rem 기준)로 고정되어
+     기존 데스크톱 디자인이 픽셀 단위로 그대로 유지된다.
+   - 1440px보다 좁아지면 뷰포트 폭에 정비례해서(= "폭이 80%면 글자도 80%")
+     계속 줄어든다.
+   - 785px 아래로 내려가면 11px에서 멈춘다(플로어). 그 이하로 계속 줄이면 가장
+     작은 글자(예: 11px짜리 라벨류)가 실제로는 7~8px까지 내려가 읽을 수 없게
+     되기 때문에 둔 최소 안전장치이며, 모든 텍스트가 "동시에" 이 바닥에
+     도달하므로 서로 간의 크기 비율은 이 구간에서도 계속 그대로 유지된다. */
+:root{
+  --type-scale: clamp(11px, 1.4vw, 16px);
+}
+html{ font-size:var(--type-scale); }
+
 *{box-sizing:border-box; margin:0; padding:0;}
 html{scroll-behavior:smooth;}
 body{
@@ -46,12 +67,12 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 .nav-mark{
   font-family:var(--f-display);
-  font-size:18px; letter-spacing:.14em; font-weight:600;
+  font-size:1.125rem; letter-spacing:.14em; font-weight:600;
   color:#fff;
 }
 .nav-links{display:flex; gap:36px;}
 .nav-links a{
-  font-family:var(--f-mono); font-size:15px; letter-spacing:.08em;
+  font-family:var(--f-mono); font-size:0.9375rem; letter-spacing:.08em;
   color:#fff; opacity:.75; transition:opacity .2s;
 }
 .nav-links a:hover{opacity:1;}
@@ -67,7 +88,6 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
      JS가 아직 실행되지 않았거나 값이 없을 때를 대비한 기본값은 16/9. */
   aspect-ratio: var(--hero-ratio, 16/9);
   max-height:100svh; /* 창을 다시 넓히거나 세로로 짧은 화면에서 뷰포트보다 커지지 않게 하는 안전장치일 뿐, 축소 동작과는 무관 */
-  display:flex; align-items:flex-end;
   overflow:hidden;
 }
 .hero-bg{position:absolute; inset:0;}
@@ -87,32 +107,43 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
     linear-gradient(180deg, rgba(14,13,12,0) 60%, rgba(14,13,12,.32) 100%);
 }
 .hero-content{
-  position:relative; z-index:2;
-  padding:0 var(--edge) 8vh;
-  width:100%;
+  /* 이전에는 .hero-content가 일반 흐름 안에서 flex(align-items:flex-end) +
+     padding-bottom:8vh로 "화면 아래쪽"에 붙어 있었다. 문제는 8vh가 "브라우저
+     창의 세로 높이" 기준이라는 것 — 창 폭만 줄여도(세로 높이는 그대로인 채)
+     .hero 자체는 aspect-ratio 때문에 폭에 비례해 더 짧아지는데, 아래 여백은
+     여전히 똑같은 "화면 기준" 픽셀 값을 차지하니 상대적으로 배너 안에서 계속
+     위로/가운데 쪽으로 밀려 올라오는 것처럼 보였다.
+     지금은 .hero를 기준(position:relative)으로 완전히 absolute 배치하고,
+     bottom 여백을 "%"로 준다. CSS에서 padding-bottom의 %는 항상 컨테이너의
+     '너비' 기준으로 계산되므로, 이 여백은 화면 세로 높이가 아니라 .hero 자신의
+     너비(=배너가 줄어드는 만큼 함께 줄어드는 값)에 비례해서 정해진다. 즉 배너가
+     70%로 작아지면 이 여백도 정확히 70%로 함께 작아지고, 텍스트 그룹은 항상
+     배너 하단의 같은 상대적 위치에 남는다. */
+  position:absolute; left:0; right:0; bottom:0; z-index:2;
+  padding:0 var(--edge) clamp(20px, 5%, 70px);
 }
 .hero-eyebrow{
-  font-family:var(--f-mono); font-size:13px; letter-spacing:.22em;
-  color:var(--rust-soft); margin-bottom:18px;
+  font-family:var(--f-mono); font-size:0.8125rem; letter-spacing:.22em;
+  color:var(--rust-soft); margin-bottom:1.125rem;
   text-shadow:0 2px 14px rgba(0,0,0,.7);
 }
 .hero-title{
   font-family:var(--f-display); font-weight:700;
-  font-size:clamp(48px, 11vw, 148px);
+  font-size:9.25rem;
   line-height:.92; letter-spacing:-.01em;
   text-transform:uppercase;
   text-shadow:0 4px 24px rgba(0,0,0,.65);
 }
 .hero-title-accent{color:var(--rust);}
 .hero-sub{
-  margin-top:20px; max-width:480px;
-  color:var(--text-dim); font-size:18px;
+  margin-top:1.25rem; max-width:480px;
+  color:var(--text-dim); font-size:1.125rem;
   text-shadow:0 2px 14px rgba(0,0,0,.75);
 }
 .hero-scroll{
-  display:inline-flex; align-items:center; gap:8px;
-  margin-top:48px;
-  font-family:var(--f-mono); font-size:12px; letter-spacing:.12em;
+  display:inline-flex; align-items:center; gap:0.5rem;
+  margin-top:3rem;
+  font-family:var(--f-mono); font-size:0.75rem; letter-spacing:.12em;
   color:var(--text-dim);
   text-shadow:0 2px 10px rgba(0,0,0,.75);
 }
@@ -132,15 +163,15 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 .section-head h2{
   font-family:var(--f-display); font-weight:600;
-  font-size:clamp(36px, 5vw, 64px); letter-spacing:.04em;
+  font-size:4rem; letter-spacing:.04em;
   color:var(--rust-soft);
 }
 .section-head-tag{
-  font-family:var(--f-mono); font-size:13px; letter-spacing:.14em;
+  font-family:var(--f-mono); font-size:0.8125rem; letter-spacing:.14em;
   color:#fff; text-transform:uppercase;
 }
 .section-head-note{
-  font-family:var(--f-mono); font-size:13px; color:var(--text-faint);
+  font-family:var(--f-mono); font-size:0.8125rem; color:var(--text-faint);
 }
 
 /* "justified" 그리드 — 3개씩 한 줄(.grid-row), 순서: 10 Desert, 09 Gate, 06 Pillar /
@@ -215,19 +246,19 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 .tile:hover .tile-overlay{opacity:1;}
 .tile-index{
-  font-family:var(--f-mono); font-size:12px; letter-spacing:.1em;
+  font-family:var(--f-mono); font-size:0.75rem; letter-spacing:.1em;
   color:var(--rust-soft); margin-bottom:6px;
 }
 .tile-name{
-  font-family:var(--f-display); font-size:clamp(22px,2.6vw,34px);
+  font-family:var(--f-display); font-size:2.125rem;
   letter-spacing:.02em; text-transform:uppercase; color:#fff;
 }
 .tile-cat{
-  font-family:var(--f-mono); font-size:13px; color:var(--text-dim);
+  font-family:var(--f-mono); font-size:0.8125rem; color:var(--text-dim);
   margin-top:6px;
 }
 .tile-sub{
-  font-family:var(--f-mono); font-size:13px; color:var(--text-dim);
+  font-family:var(--f-mono); font-size:0.8125rem; color:var(--text-dim);
   margin-top:10px; letter-spacing:.02em;
 }
 
@@ -238,7 +269,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 .tile.is-placeholder .placeholder-path{
   position:absolute; top:16px; left:16px; right:16px;
-  font-family:var(--f-mono); font-size:10px; color:var(--text-faint);
+  font-family:var(--f-mono); font-size:0.625rem; color:var(--text-faint);
   word-break:break-all;
 }
 
@@ -254,48 +285,48 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 .university-spotlight{margin-top:clamp(50px, 8vw, 90px);}
 .university-spotlight-title{
   font-family:var(--f-display); font-weight:600;
-  font-size:clamp(20px, 2.6vw, 30px); text-transform:uppercase;
+  font-size:1.875rem; text-transform:uppercase;
   letter-spacing:.14em;
   padding-bottom:16px; margin-bottom:20px;
   border-bottom:1px solid var(--line);
 }
 
-/* 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING) — 항상 한 줄에 나란히 배치하고,
-   WORKS 그리드와 똑같은 공식을 그대로 재사용한다: 각 타일에 실제 이미지의
-   가로/세로 비율을 --ratio로 심고(script.js가 이미지 로드 후 자연 크기로 계산),
-   컨테이너에는 두 --ratio의 합을 --row-sum으로 심어서
-     aspect-ratio = ratio / (row-sum * --uniform-row-k)
-   식을 그대로 쓴다. 위 .tile 규칙의 주석에서 설명했듯 이 식을 쓰면 타일 높이가
-   항상 "컨테이너 폭 * --uniform-row-k"가 되어, 이미지 비율이 서로 달라도 두 타일의
-   높이가 정확히 같아지고(= WORKS 썸네일 높이와도 같아짐), 두 타일 너비의 합은
-   항상 컨테이너 폭과 정확히 일치해서(= flex-grow가 ratio 비율대로 나눠 가짐) 절대
-   줄바꿈되거나 한쪽만 커지지 않는다. 창 폭이 줄면 containerWidth 자체가 줄어드는
-   것이므로 두 타일이 항상 같은 비율로 함께 작아진다. */
+/* 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING) — 항상 한 줄에 나란히,
+   왼쪽 정렬로 배치한다. 이전에는 WORKS 그리드처럼 flex-grow + --row-sum 계산식으로
+   "줄 전체 폭을 정확히 채우도록" 너비를 나눠 가지게 했는데, 그러면 실제 이미지
+   비율과 계산된 박스 비율이 조금이라도 어긋나는 순간(비동기 로드 타이밍 등) 박스가
+   이미지보다 넓어지면서 옆에 빈 여백(패널 배경색)이 보이는 문제가 생겼다.
+   여기서는 그 대신 훨씬 단순하고 어긋날 일이 없는 방식을 쓴다: 두 타일 모두
+   "높이"만 똑같이 고정하고(뷰포트 폭 비례 값이라 창을 줄이면 함께 줄어듦),
+   너비는 각자의 이미지가 실제로 렌더링되는 만큼만(auto) 차지하게 한다.
+   flex:0 0 auto라서 타일이 이미지보다 커질 수 없고, 그래서 이미지 옆에 남는
+   공간 자체가 생기지 않는다. */
 .university-duo{
   display:flex;
   flex-wrap:nowrap; /* 항상 한 줄 — 좁은 화면이라고 세로로 쌓이지 않는다 */
-  align-items:flex-start;
+  align-items:flex-start; /* 위 기준 정렬 — 두 타일 높이가 어차피 같아서 결과는 동일 */
   gap:var(--tile-gap);
-  justify-content:flex-start;
+  justify-content:flex-start; /* 왼쪽 정렬. center로 바꾸지 말 것 — 그러면 첫 작품이
+                                  WORKS 썸네일의 왼쪽 기준선에서 안쪽으로 밀린다 */
 }
 .university-duo .tile{
-  flex-grow:var(--ratio, 1.78);
-  flex-shrink:1;
-  flex-basis:0;
-  min-width:0;
+  flex:0 0 auto; /* 카드가 이미지 크기 그대로만 차지 — 늘어나거나 남는 공간이 생기지 않는다 */
   width:auto;
-  height:auto;
-  aspect-ratio:calc(var(--ratio, 1.78) / (var(--row-sum, 3.56) * var(--uniform-row-k)));
+  height:clamp(220px, 20vw, 480px); /* 두 타일 모두 이 값 하나를 공유하므로 높이가 항상 서로 같다 */
+  max-width:100%; /* 극단적으로 좁은 화면에서 카드 하나가 컨테이너 폭을 넘지 않게 하는 안전장치 */
 }
 .university-duo .tile img{
-  /* 기본 .tile img 규칙(position:absolute + object-fit:cover)은 이미지를 박스에
-     맞춰 잘라내므로 여기서는 취소한다. 타일의 aspect-ratio가 이미 실제 이미지
-     비율과 정확히 같게 계산되므로 object-fit:contain은 안전장치일 뿐 — 크롭도,
-     찌그러짐도, 레터박스도 생기지 않는다. */
+  /* 기본 .tile img 규칙(position:absolute + object-fit:cover)은 박스에 맞춰
+     이미지를 잘라내므로 여기서는 취소한다. 높이를 100%로 주고 너비는 auto로
+     둬서 이미지 자신의 원본 가로세로 비율 그대로 렌더링되며, 그 렌더링된 너비가
+     곧 위 .tile의 실제 너비가 된다(= 이미지와 카드가 항상 정확히 같은 크기).
+     object-fit:contain과 max-width:100%는 혹시 모를 극단적으로 좁은 화면에서의
+     안전장치일 뿐, 평소에는 크롭도 레터박스도 생기지 않는다. */
   position:static;
   display:block;
-  width:100%;
+  width:auto;
   height:100%;
+  max-width:100%;
   object-fit:contain;
 }
 
@@ -316,12 +347,12 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   margin-bottom:64px;
 }
 .about-back{
-  font-family:var(--f-mono); font-size:14px; letter-spacing:.04em;
+  font-family:var(--f-mono); font-size:0.875rem; letter-spacing:.04em;
   color:var(--text-dim); transition:color .2s;
 }
 .about-back:hover{color:#fff;}
 .about-page-label{
-  font-family:var(--f-mono); font-size:11px; letter-spacing:.16em;
+  font-family:var(--f-mono); font-size:0.6875rem; letter-spacing:.16em;
   color:var(--text-faint);
 }
 
@@ -332,26 +363,26 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   padding-bottom:44px; margin-bottom:44px;
 }
 .about-eyebrow{
-  font-family:var(--f-mono); font-size:13px; letter-spacing:.2em;
+  font-family:var(--f-mono); font-size:0.8125rem; letter-spacing:.2em;
   color:var(--rust-soft); margin-bottom:18px;
 }
 .about-name{
   font-family:var(--f-display); font-weight:700;
-  font-size:clamp(40px,6vw,72px); line-height:1.02;
+  font-size:4.5rem; line-height:1.02;
   text-transform:uppercase; color:var(--text);
 }
 .about-name-accent{color:var(--rust);}
 .about-contact{
-  font-family:var(--f-mono); font-size:13px; letter-spacing:.06em;
+  font-family:var(--f-mono); font-size:0.8125rem; letter-spacing:.06em;
   color:var(--text-faint); margin-top:20px;
 }
 .about-bio-lead{
   font-family:var(--f-body); font-weight:500;
-  font-size:clamp(19px, 2.1vw, 24px); line-height:1.5;
+  font-size:1.5rem; line-height:1.5;
   color:var(--text); margin-top:24px; max-width:520px;
 }
 .about-bio-detail{
-  font-family:var(--f-body); font-size:14px; line-height:1.7;
+  font-family:var(--f-body); font-size:0.875rem; line-height:1.7;
   color:var(--text-dim); margin-top:16px; max-width:480px;
 }
 .about-photo{
@@ -369,16 +400,16 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   border-bottom:1px solid var(--line);
 }
 .about-label{
-  font-family:var(--f-mono); font-size:12px; letter-spacing:.18em;
+  font-family:var(--f-mono); font-size:0.75rem; letter-spacing:.18em;
   color:var(--rust-soft); margin-bottom:16px;
 }
 .about-tools-list{
-  font-size:17px; line-height:1.8; color:var(--text); max-width:660px;
+  font-size:1.0625rem; line-height:1.8; color:var(--text); max-width:660px;
 }
 
 .about-section{margin-bottom:56px;}
 .about-section-label{
-  font-family:var(--f-mono); font-size:13px; letter-spacing:.2em;
+  font-family:var(--f-mono); font-size:0.8125rem; letter-spacing:.2em;
   color:var(--rust-soft); margin-bottom:8px;
 }
 .about-entry{
@@ -386,18 +417,18 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   padding:28px 0; border-top:1px solid var(--line);
 }
 .about-entry-year{
-  font-family:var(--f-mono); font-size:14px; color:var(--text-faint); padding-top:4px;
+  font-family:var(--f-mono); font-size:0.875rem; color:var(--text-faint); padding-top:4px;
 }
 .about-entry-body h3{
-  font-family:var(--f-display); font-size:22px; letter-spacing:.02em;
+  font-family:var(--f-display); font-size:1.375rem; letter-spacing:.02em;
   text-transform:uppercase; color:var(--text); margin-bottom:8px;
 }
 .about-entry-sub{
-  font-family:var(--f-mono); font-size:13px; color:var(--text-dim); margin-bottom:16px;
+  font-family:var(--f-mono); font-size:0.8125rem; color:var(--text-dim); margin-bottom:16px;
 }
 .about-entry-body ul{list-style:none;}
 .about-entry-body li{
-  font-size:15px; color:var(--text-dim); line-height:1.6;
+  font-size:0.9375rem; color:var(--text-dim); line-height:1.6;
   position:relative; padding-left:18px; margin-bottom:8px;
 }
 .about-entry-body li::before{content:"—"; position:absolute; left:0; color:var(--text-faint);}
@@ -423,7 +454,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   position:absolute; top:20px; right:400px; z-index:5;
   width:40px; height:40px;
   border:1px solid var(--line); border-radius:50%;
-  color:var(--text-dim); font-size:16px;
+  color:var(--text-dim); font-size:1rem;
   display:flex; align-items:center; justify-content:center;
   transition:.2s;
 }
@@ -459,7 +490,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 .detail-nav{
   position:absolute; top:50%; transform:translateY(-50%);
   width:48px; height:48px; z-index:4;
-  font-size:26px; color:var(--text-dim);
+  font-size:1.625rem; color:var(--text-dim);
   display:flex; align-items:center; justify-content:center;
   transition:.2s;
 }
@@ -468,7 +499,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 
 .detail-controls{
   position:absolute; bottom:22px; left:22px; z-index:4;
-  font-family:var(--f-mono); font-size:12px; color:var(--text-dim);
+  font-family:var(--f-mono); font-size:0.75rem; color:var(--text-dim);
   background:rgba(14,13,12,.55);
   padding:6px 12px;
   border:1px solid var(--line);
@@ -481,14 +512,14 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   display:flex; flex-direction:column;
 }
 .detail-category{
-  font-family:var(--f-mono); font-size:12px; letter-spacing:.16em;
+  font-family:var(--f-mono); font-size:0.75rem; letter-spacing:.16em;
   color:var(--rust-soft); margin-bottom:10px;
 }
 .detail-title{
-  font-family:var(--f-display); font-size:36px; text-transform:uppercase;
+  font-family:var(--f-display); font-size:2.25rem; text-transform:uppercase;
   margin-bottom:16px; line-height:1.1;
 }
-.detail-desc{color:var(--text-dim); font-size:15px; margin-bottom:28px;}
+.detail-desc{color:var(--text-dim); font-size:0.9375rem; margin-bottom:28px;}
 
 .detail-meta{
   display:grid; grid-template-columns:1fr 1fr; gap:18px 12px;
@@ -496,10 +527,10 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   margin-bottom:28px;
 }
 .detail-meta dt{
-  font-family:var(--f-mono); font-size:11px; letter-spacing:.12em;
+  font-family:var(--f-mono); font-size:0.6875rem; letter-spacing:.12em;
   color:var(--text-faint); margin-bottom:4px;
 }
-.detail-meta dd{font-size:14px; color:var(--text);}
+.detail-meta dd{font-size:0.875rem; color:var(--text);}
 
 /* 예전에는 정사각형 썸네일이 4열 바둑판으로 전부 한 번에 보였는데,
    지금은 세로로 스크롤하면서 하나씩 훑어보는 목록 형태로 바뀌었다. */
@@ -522,7 +553,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 .thumb-item-label{
   display:block;
-  font-family:var(--f-mono); font-size:11px; letter-spacing:.1em;
+  font-family:var(--f-mono); font-size:0.6875rem; letter-spacing:.1em;
   color:var(--text-dim); margin-top:8px;
 }
 .thumb-item:hover, .thumb-item.is-active{opacity:1;}
@@ -540,10 +571,10 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 .detail-next-project{
   display:flex; align-items:center; gap:10px;
   padding-top:20px; border-top:1px solid var(--line);
-  font-family:var(--f-mono); font-size:12px; color:var(--text-dim);
+  font-family:var(--f-mono); font-size:0.75rem; color:var(--text-dim);
 }
 .detail-next-project strong{
-  font-family:var(--f-display); font-size:16px; color:var(--text); text-transform:uppercase;
+  font-family:var(--f-display); font-size:1rem; color:var(--text); text-transform:uppercase;
 }
 .detail-next-project .arrow{margin-left:auto; color:var(--rust-soft); transition:.2s;}
 .detail-next-project:hover .arrow{transform:translateX(4px);}
@@ -564,7 +595,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   padding:10px 18px;
   border:1px solid var(--line);
   background:rgba(14,13,12,.6);
-  font-family:var(--f-mono); font-size:12px; letter-spacing:.1em;
+  font-family:var(--f-mono); font-size:0.75rem; letter-spacing:.1em;
   color:var(--text-dim);
   transition:.2s;
 }
@@ -594,6 +625,6 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 /* ===== FOOTER ===== */
 .footer{padding:8vh var(--edge) 6vh; border-top:1px solid var(--line);}
 .footer-inner{display:flex; flex-direction:column; gap:8px;}
-.footer-mark{font-family:var(--f-display); letter-spacing:.14em; font-size:15px;}
-.footer-email{color:var(--rust-soft); font-family:var(--f-mono); font-size:14px;}
-.footer-copy{color:var(--text-faint); font-size:12px; margin-top:8px;}
+.footer-mark{font-family:var(--f-display); letter-spacing:.14em; font-size:0.9375rem;}
+.footer-email{color:var(--rust-soft); font-family:var(--f-mono); font-size:0.875rem;}
+.footer-copy{color:var(--text-faint); font-size:0.75rem; margin-top:8px;}
