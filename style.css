@@ -77,26 +77,33 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 .nav-links a:hover{opacity:1;}
 
-/* ===== HERO ===== */
+/* ===== HERO =====
+   요청대로 "width:100%; height:auto"인 일반 반응형 이미지/영상과 똑같이 동작하게
+   만든다. .hero에는 max-width/margin/padding이 전혀 없어서 좌우로 브라우저
+   끝까지 항상 꽉 찬다. 이전에는 .hero 자체에 (뷰포트 비율을 흉내낸)
+   aspect-ratio를 강제로 걸고 그 안의 video/img를 object-fit:cover로 박스에
+   맞춰 잘라냈는데, 이렇게 하면 "영상 원본 비율 유지"가 아니라 "화면 비율에 맞춰
+   크롭"이 되어버린다. 지금은 그 대신 video/img를 그냥 일반 흐름(display:block)
+   에 두고 width:100%; height:auto만 준다 — 이건 <img>/<video>가 원래 갖고
+   있는 반응형 동작 그대로라, 원본 가로세로 비율이 그대로 유지되면서 창 폭에 맞춰
+   전체 크기만 비례해서 줄어든다(찌그러짐도, 크롭도, 좌우 여백도 없음).
+   .hero의 높이는 이제 고정값이 아니라 그 안에 보이는 video/img의 렌더링된
+   높이를 그대로 따라간다(= 자연스러운 콘텐츠 기반 높이). */
 .hero{
   position:relative;
   width:100%;
-  /* --hero-ratio는 script.js가 페이지 로드 시점의 실제 뷰포트 가로:세로 비율을
-     한 번만 계산해서 심어둔다(리사이즈마다 다시 계산하지 않음). 그래서 창의
-     가로폭만 줄여도 이 비율이 그대로 유지된 채 세로 높이가 폭에 비례해서 함께
-     줄어든다 — height:100svh처럼 세로 높이가 창 폭과 무관하게 고정돼 있지 않다.
-     JS가 아직 실행되지 않았거나 값이 없을 때를 대비한 기본값은 16/9. */
-  aspect-ratio: var(--hero-ratio, 16/9);
-  max-height:100svh; /* 창을 다시 넓히거나 세로로 짧은 화면에서 뷰포트보다 커지지 않게 하는 안전장치일 뿐, 축소 동작과는 무관 */
-  overflow:hidden;
 }
-.hero-bg{position:absolute; inset:0;}
+.hero-bg{
+  position:relative; /* .hero-scrim이 absolute로 꽉 채울 기준점 역할만 한다 */
+  width:100%;
+}
 .hero-bg img,
 .hero-bg video{
-  width:100%; height:100%; object-fit:cover;
+  display:none; /* JS가 실제로 로드된 쪽(video/img)만 block으로 전환 */
+  width:100%;
+  height:auto; /* 원본 비율 그대로 — 늘리거나 자르지 않는다 */
   filter:grayscale(.15) contrast(1.05);
   animation:heroZoom 16s ease-out forwards;
-  display:none; /* JS가 실제로 로드된 쪽(video/img)만 보이게 전환 */
 }
 @keyframes heroZoom{ from{transform:scale(1.08);} to{transform:scale(1);} }
 .hero-scrim{
@@ -107,18 +114,10 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
     linear-gradient(180deg, rgba(14,13,12,0) 60%, rgba(14,13,12,.32) 100%);
 }
 .hero-content{
-  /* 이전에는 .hero-content가 일반 흐름 안에서 flex(align-items:flex-end) +
-     padding-bottom:8vh로 "화면 아래쪽"에 붙어 있었다. 문제는 8vh가 "브라우저
-     창의 세로 높이" 기준이라는 것 — 창 폭만 줄여도(세로 높이는 그대로인 채)
-     .hero 자체는 aspect-ratio 때문에 폭에 비례해 더 짧아지는데, 아래 여백은
-     여전히 똑같은 "화면 기준" 픽셀 값을 차지하니 상대적으로 배너 안에서 계속
-     위로/가운데 쪽으로 밀려 올라오는 것처럼 보였다.
-     지금은 .hero를 기준(position:relative)으로 완전히 absolute 배치하고,
-     bottom 여백을 "%"로 준다. CSS에서 padding-bottom의 %는 항상 컨테이너의
-     '너비' 기준으로 계산되므로, 이 여백은 화면 세로 높이가 아니라 .hero 자신의
-     너비(=배너가 줄어드는 만큼 함께 줄어드는 값)에 비례해서 정해진다. 즉 배너가
-     70%로 작아지면 이 여백도 정확히 70%로 함께 작아지고, 텍스트 그룹은 항상
-     배너 하단의 같은 상대적 위치에 남는다. */
+  /* 텍스트 그룹은 .hero를 기준(position:relative)으로 absolute 배치하고
+     bottom 여백을 "%"로 준다. padding-bottom의 %는 항상 컨테이너의 '너비'
+     기준으로 계산되므로, 배너(=video)가 줄어드는 만큼 이 여백도 정확히 같은
+     비율로 함께 줄어들어 텍스트가 항상 배너 하단의 같은 상대적 위치에 남는다. */
   position:absolute; left:0; right:0; bottom:0; z-index:2;
   padding:0 var(--edge) clamp(20px, 5%, 70px);
 }
@@ -310,6 +309,14 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
                                   WORKS 썸네일의 왼쪽 기준선에서 안쪽으로 밀린다 */
 }
 .university-duo .tile{
+  /* 기본 .tile 규칙(.tile{ aspect-ratio:calc(var(--ratio,1)/(var(--row-sum,1)*var(--uniform-row-k))) })이
+     University 타일에도 그대로 적용되고 있었다. University에는 --ratio/--row-sum을
+     심어주는 JS가 없으므로 이 계산식은 기본값(1, 1, 0.2)으로 떨어져서
+     "aspect-ratio: 5"(가로가 세로의 5배)가 강제로 걸려 있었던 것 — 바로 이게
+     이미지 오른쪽에 생기던 큰 빈 사각형의 원인이었다. 여기서 aspect-ratio:auto로
+     명시적으로 취소해야 실제 이미지 비율(아래 img의 width:auto/height:100%)로만
+     너비가 결정된다. */
+  aspect-ratio:auto;
   flex:0 0 auto; /* 카드가 이미지 크기 그대로만 차지 — 늘어나거나 남는 공간이 생기지 않는다 */
   width:auto;
   height:clamp(220px, 20vw, 480px); /* 두 타일 모두 이 값 하나를 공유하므로 높이가 항상 서로 같다 */
