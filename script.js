@@ -392,25 +392,10 @@ function buildUniversityDuo() {
   if (!universityDuo) return;
   universityDuo.innerHTML = "";
 
-  // WORKS 그리드(.grid-row의 --row-sum)와 똑같은 방식: 두 타일의 --ratio 합을
-  // 컨테이너에 --row-sum으로 심어서 style.css의 aspect-ratio 공식이 두 타일의
-  // 높이를 항상 똑같이 맞추게 한다. 실제 이미지가 로드되기 전에는 16:9(1.78)를
-  // 임시값으로 쓰다가, 로드되면 자연 크기 기준 실제 비율로 갱신한다.
-  const DEFAULT_RATIO = 16 / 9;
-  const tileRatios = [];
-
-  function syncRowSum() {
-    const sum = tileRatios.reduce((s, r) => s + (r || DEFAULT_RATIO), 0);
-    universityDuo.style.setProperty("--row-sum", sum || DEFAULT_RATIO * UNIVERSITY_ITEMS.length);
-  }
-
-  UNIVERSITY_ITEMS.forEach((p, index) => {
-    tileRatios[index] = DEFAULT_RATIO;
-
+  UNIVERSITY_ITEMS.forEach((p) => {
     const tile = document.createElement("a");
     tile.href = `#work/${p.id}`;
     tile.className = "tile loading";
-    tile.style.setProperty("--ratio", DEFAULT_RATIO);
     tile.innerHTML = `
       <div class="tile-overlay">
         <span class="tile-name">${p.label}</span>
@@ -425,7 +410,6 @@ function buildUniversityDuo() {
     tile.addEventListener("pointerenter", () => getProjectImages(p.id), { once: true });
     tile.addEventListener("touchstart", () => getProjectImages(p.id), { once: true, passive: true });
     universityDuo.appendChild(tile);
-    syncRowSum();
 
     getUniversityThumb(p.id).then(async (thu1) => {
       tile.classList.remove("loading");
@@ -447,13 +431,6 @@ function buildUniversityDuo() {
       img.loading = "lazy";
       img.decoding = "async";
       img.alt = p.label;
-      img.addEventListener("load", () => {
-        if (!img.naturalWidth || !img.naturalHeight) return;
-        const ratio = img.naturalWidth / img.naturalHeight;
-        tileRatios[index] = ratio;
-        tile.style.setProperty("--ratio", ratio);
-        syncRowSum();
-      });
       img.src = mainUrl;
       tile.prepend(img);
     });
