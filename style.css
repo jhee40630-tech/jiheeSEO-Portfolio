@@ -330,7 +330,15 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   aspect-ratio:auto;
   flex:0 0 auto; /* 카드가 이미지 크기 그대로만 차지 — 늘어나거나 남는 공간이 생기지 않는다 */
   width:auto;
-  height:clamp(220px, 20vw, 480px); /* 두 타일 모두 이 값 하나를 공유하므로 높이가 항상 서로 같다 */
+  /* height의 최솟값(clamp 첫 번째 값)이 220px였는데, 20vw가 220px 밑으로
+     내려가는 순간(= 뷰포트 폭이 1100px 아래로만 내려가도 바로) 그 아래로는
+     더 이상 안 줄고 220px에 고정돼 버렸다. WORKS 그리드 쪽 타일은 애초에
+     이런 최솟값 자체가 없어서(순수 "컨테이너 폭 × k") 창을 계속 줄이면 끝없이
+     같이 줄어드는데, 여기만 유독 "안 줄어드는" 것처럼 보인 원인이 이 220px
+     바닥값이었다. 최솟값을 아주 작은 값(60px, 뷰포트 폭이 300px일 때만 닿는
+     수준)으로 낮춰서, 일반적으로 창을 줄이는 범위에서는 WORKS 썸네일과 똑같이
+     계속 비례해서 줄어들게 했다. */
+  height:clamp(60px, 20vw, 480px); /* 두 타일 모두 이 값 하나를 공유하므로 높이가 항상 서로 같다 */
   max-width:100%; /* 극단적으로 좁은 화면에서 카드 하나가 컨테이너 폭을 넘지 않게 하는 안전장치 */
 }
 .university-duo .tile img{
