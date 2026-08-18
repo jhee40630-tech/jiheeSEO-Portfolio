@@ -351,12 +351,35 @@ function buildGrid() {
   }
 }
 
-/* hero banner: 이미지/동영상 확장자를 모두 탐색해서, 찾은 쪽만 보여준다. */
+/** resolveMediaUrl과 반대로, "동영상"을 먼저 찾고 없을 때만 이미지로 넘어간다.
+    히어로 배너 전용 — 상세페이지/썸네일은 원래대로 이미지 우선(resolveMediaUrl)을 그대로 쓴다. */
+async function resolveHeroMedia(base, n) {
+  const vidHits = await Promise.all(
+    VIDEO_EXTENSIONS.map(async (ext) => {
+      const url = `${base}/${n}.${ext}`;
+      return (await probeVideo(url)) ? { url, type: "video" } : null;
+    })
+  );
+  const foundVideo = vidHits.find(Boolean);
+  if (foundVideo) return foundVideo;
+
+  const imgHits = await Promise.all(
+    EXTENSIONS.map(async (ext) => {
+      const url = `${base}/${n}.${ext}`;
+      return (await probeImage(url)) ? { url, type: "image" } : null;
+    })
+  );
+  return imgHits.find(Boolean) || null;
+}
+
+/* hero banner: 이미지/동영상 확장자를 모두 탐색해서, 찾은 쪽만 보여준다.
+   같은 폴더에 1.webp와 1.mp4가 함께 있는 경우, 히어로는 항상 동영상을 우선한다
+   (resolveMediaUrl은 이미지를 먼저 찾기 때문에 여기서는 그걸 쓰지 않는다). */
 async function setHeroImage() {
   const heroVideo = document.getElementById("hero-video");
   const heroImg = document.getElementById("hero-img");
   const base = heroImg.dataset.base;
-  const media = await resolveMediaUrl(base, 1);
+  const media = await resolveHeroMedia(base, 1);
   if (!media) return;
   if (media.type === "video") {
     heroVideo.src = media.url;
