@@ -151,15 +151,6 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
    더 이상 각 타일의 --ratio를 그대로 따르지 않고, 아래 .tile 규칙에서 설명하듯 모든
    줄이 항상 같은 높이가 되도록 별도로 계산한다 — 정사각형·가로형·세로형 타일이
    섞여 있어도, 그리고 줄마다 들어간 타일의 ratio 합이 달라도 줄 높이는 통일된다. */
-.grid{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.grid-row{
-  display:flex;
-  gap:10px;
-}
 
 /* 모든 WORKS 썸네일의 세로 높이를 줄과 무관하게 통일한다.
    각 줄(.grid-row)의 실제 렌더링 높이는 "containerWidth * --uniform-row-k" 로 고정하고
@@ -179,6 +170,19 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
    약 2.5줄이 보이는" 밀도를 유지하도록 고른 값이다. */
 :root{
   --uniform-row-k: 0.2;
+  /* 썸네일 사이 간격도 화면 폭에 맞춰 자연스럽게 줄어들도록 고정 10px 대신 clamp 사용 */
+  --tile-gap: clamp(4px, 1.1vw, 10px);
+}
+
+.grid{
+  display:flex;
+  flex-direction:column;
+  gap:var(--tile-gap);
+}
+.grid-row{
+  display:flex;
+  flex-wrap:nowrap; /* 줄을 절대 접지 않는다 — 항상 데스크톱과 동일하게 한 줄에 같은 개수가 유지된다 */
+  gap:var(--tile-gap);
 }
 
 .tile{
@@ -191,21 +195,6 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   flex-basis:0;
   min-width:0;
   aspect-ratio:calc(var(--ratio, 1) / (var(--row-sum, 1) * var(--uniform-row-k)));
-}
-
-/* 아래 브레이크포인트들은 한 줄에 몇 개씩 배치할지(wrap)만 바꾸고, 타일의
-   height/aspect-ratio는 절대 건드리지 않는다 — 그래야 창 폭이 줄어도 모든 타일이
-   위 규칙 하나로만 계산된 동일한 높이 비율을 계속 유지한다. */
-@media(max-width:900px){
-  /* 좁은 화면에서는 한 줄에 3개씩 두면 세로형(Pillar) 등이 너무 좁아지므로,
-     줄을 접어서(wrap) 한 줄에 2개씩만 배치한다. 높이 계산식(위 .tile의 aspect-ratio)은
-     그대로 유지되므로 여기서도 모든 줄의 높이는 계속 통일되어 있다. */
-  .grid-row{flex-wrap:wrap;}
-  .tile{flex:1 1 calc(50% - 5px);}
-}
-@media(max-width:520px){
-  /* 가장 좁은 화면에서는 한 줄에 1개씩만 배치한다. 높이 계산식은 여전히 동일하게 유지된다. */
-  .tile{flex-basis:100%;}
 }
 
 .tile img{
@@ -271,50 +260,43 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   border-bottom:1px solid var(--line);
 }
 
-/* 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING) — 크롭 없이 원본 이미지
-   전체가 그대로 보이도록 하면서, 위쪽 WORKS 그리드 타일과 "세로 높이"만 비슷하게
-   맞춘다. WORKS 그리드는 16:9 같은 고정 비율이 아니라 "타일 높이 = 컨테이너 폭 *
-   --uniform-row-k" 공식으로 계산되기 때문에(위 .tile 관련 주석 참고) 실제로는
-   뷰포트/컨테이너 폭에 비례해서 커지고 줄어든다. 여기서도 고정 vh 대신 vw 기반
-   값을 써서, 창 폭을 줄이면 이 높이도 같은 방식으로 함께 줄어들게 한다. */
+/* 2개 썸네일(DESIGN & OBJECTS / PAINTING & DRAWING) — 항상 한 줄에 나란히 배치하고,
+   WORKS 그리드와 똑같은 공식을 그대로 재사용한다: 각 타일에 실제 이미지의
+   가로/세로 비율을 --ratio로 심고(script.js가 이미지 로드 후 자연 크기로 계산),
+   컨테이너에는 두 --ratio의 합을 --row-sum으로 심어서
+     aspect-ratio = ratio / (row-sum * --uniform-row-k)
+   식을 그대로 쓴다. 위 .tile 규칙의 주석에서 설명했듯 이 식을 쓰면 타일 높이가
+   항상 "컨테이너 폭 * --uniform-row-k"가 되어, 이미지 비율이 서로 달라도 두 타일의
+   높이가 정확히 같아지고(= WORKS 썸네일 높이와도 같아짐), 두 타일 너비의 합은
+   항상 컨테이너 폭과 정확히 일치해서(= flex-grow가 ratio 비율대로 나눠 가짐) 절대
+   줄바꿈되거나 한쪽만 커지지 않는다. 창 폭이 줄면 containerWidth 자체가 줄어드는
+   것이므로 두 타일이 항상 같은 비율로 함께 작아진다. */
 .university-duo{
   display:flex;
-  flex-wrap:wrap;
+  flex-wrap:nowrap; /* 항상 한 줄 — 좁은 화면이라고 세로로 쌓이지 않는다 */
   align-items:flex-start;
-  gap:10px;
+  gap:var(--tile-gap);
   justify-content:flex-start;
 }
 .university-duo .tile{
-  width:100%;
+  flex-grow:var(--ratio, 1.78);
+  flex-shrink:1;
+  flex-basis:0;
+  min-width:0;
+  width:auto;
   height:auto;
-  flex:0 1 100%;
+  aspect-ratio:calc(var(--ratio, 1.78) / (var(--row-sum, 3.56) * var(--uniform-row-k)));
 }
 .university-duo .tile img{
   /* 기본 .tile img 규칙(position:absolute + object-fit:cover)은 이미지를 박스에
-     맞춰 잘라내므로 여기서는 취소한다. 대신 이미지를 있는 그대로 흐름에 놓고
-     원본 가로세로 비율을 그대로 유지한 채 전체가 다 보이게 한다. */
+     맞춰 잘라내므로 여기서는 취소한다. 타일의 aspect-ratio가 이미 실제 이미지
+     비율과 정확히 같게 계산되므로 object-fit:contain은 안전장치일 뿐 — 크롭도,
+     찌그러짐도, 레터박스도 생기지 않는다. */
   position:static;
   display:block;
   width:100%;
-  height:auto;
-  max-width:100%;
+  height:100%;
   object-fit:contain;
-}
-@media(min-width:901px){
-  /* 데스크톱: 두 작품을 한 줄에 나란히 배치. 높이를 뷰포트 폭 비례 값으로 고정하고
-     (창을 줄이면 함께 줄어듦) 너비는 각 이미지의 원본 비율을 따라 auto로 둔다 —
-     이미지가 잘리지 않고 전체가 그대로, 통째로 축소되어 보인다. */
-  .university-duo .tile{
-    height:clamp(220px, 20vw, 480px);
-    width:auto;
-    max-width:100%;
-    flex:0 0 auto;
-  }
-  .university-duo .tile img{
-    width:auto;
-    height:100%;
-    max-width:100%;
-  }
 }
 
 /* ===== ABOUT PAGE (전체화면 오버레이 — 나머지 상세페이지와 동일한 방식) ===== */
