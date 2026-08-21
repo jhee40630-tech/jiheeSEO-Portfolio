@@ -180,14 +180,42 @@ async function resolveProjectImages(id) {
   const base = projectBase(id);
   const media = [];
 
-  const first = await resolveMediaUrl(base, 1);
-  if (!first) return media;
-  media.push(first);
+  // 1번 슬롯은 이미지와 동영상이 "같이" 있을 수 있다 (예: 1.webp + 1.mp4).
+  // 예전에는 이미지가 있으면 동영상은 아예 찾아보지도 않고 버렸는데,
+  // 이제는 둘 다 있으면 동영상을 먼저, 그다음 이미지를 넣어서 둘 다 보여준다
+  // (동영상 하나만 있거나 이미지 하나만 있으면 그것만 넣는다).
+  const [firstImg, firstVid] = await Promise.all([
+    (async () => {
+      const hits = await Promise.all(
+        EXTENSIONS.map(async (ext) => {
+          const url = `${base}/1.${ext}`;
+          return (await probeImage(url)) ? { url, type: "image" } : null;
+        })
+      );
+      return hits.find(Boolean) || null;
+    })(),
+    (async () => {
+      const hits = await Promise.all(
+        VIDEO_EXTENSIONS.map(async (ext) => {
+          const url = `${base}/1.${ext}`;
+          return (await probeVideo(url)) ? { url, type: "video" } : null;
+        })
+      );
+      return hits.find(Boolean) || null;
+    })(),
+  ]);
+
+  if (!firstImg && !firstVid) return media;
 
   const known = { ext: null, videoExt: null };
-  const firstExt = first.url.split(".").pop();
-  if (first.type === "image") known.ext = firstExt;
-  else known.videoExt = firstExt;
+  if (firstVid) {
+    media.push(firstVid);
+    known.videoExt = firstVid.url.split(".").pop();
+  }
+  if (firstImg) {
+    media.push(firstImg);
+    known.ext = firstImg.url.split(".").pop();
+  }
 
   let consecutiveGaps = 0;
 
