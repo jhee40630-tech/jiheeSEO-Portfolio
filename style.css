@@ -546,6 +546,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   margin-bottom:16px; line-height:1.1;
 }
 .detail-desc{color:var(--text-dim); font-size:0.9375rem; margin-bottom:28px; white-space:pre-line;}
+.detail-desc strong{font-weight:700; color:inherit;}
 
 /* 배경 소스 표기 — 상세 설명보다 확실히 작고 흐린 회색으로, 본문과는 한 줄 정도
    떨어져 보이도록 위쪽에 여백을 준다. 소스가 없는 프로젝트는 JS에서 통째로 숨김. */
