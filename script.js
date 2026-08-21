@@ -23,15 +23,15 @@
      더 이상 찾을 수 없는 지점에서 자동으로 멈춥니다.
    ========================================================= */
 const PROJECTS = [
-  { id: "10Desert",           label: "Desert",           category: "Environment",  ratio: 16 / 9,  desc: "사막 지형의 라이팅과 대기 표현.",           date: "2026.08", period: "2026.04 – 2026.08", role: "Environment / Lighting",  scope: "Personal", focus: "Atmosphere",       pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "09Gate",              label: "Gate",              category: "Prop",  ratio: 16 / 9,  desc: "관문 구조물의 스케일과 디테일 스터디.",       date: "2026.04", period: "2026.01 – 2026.04", role: "Modeling / Lookdev",       scope: "Personal", focus: "Architecture",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "06Pillar",            label: "Pillar",            category: "Prop",  ratio: 9 / 16,  desc: "고대 건축 기둥의 마모와 질감을 재현.",        date: "2026.01", period: "2025.12 – 2026.01", role: "Sculpting / Texturing",    scope: "Personal", focus: "Weathering",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "08Trebuchet",         label: "Trebuchet",         category: "Prop", ratio: 1.4,     desc: "투석기 메커니즘을 기능적으로 모델링.",        date: "2025.12", period: "2025.10 – 2025.12", role: "Modeling",                 scope: "Personal", focus: "Mechanical",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "07Alley",             label: "Alley",             category: "Prop",  ratio: 1,       desc: "좁은 골목의 분위기와 조명을 다룬 씬.",        date: "2025.10", period: "2025.09 – 2025.10", role: "Modeling / Lighting",      scope: "Personal", focus: "Mood & Lighting",   pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "05Computer",          label: "Computer",          category: "Prop",         ratio: 1,       desc: "레트로 컴퓨터 프롭 모델링 및 재질 스터디.",   date: "2025.09", period: "2025.08 – 2025.09", role: "Modeling / Texturing",     scope: "Personal", focus: "Prop Design",       pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "04Sci-fi Container",  label: "Sci-fi Container",  category: "Prop", ratio: 1,       desc: "SF 세계관의 컨테이너 구조물 디자인.",        date: "2025.08", period: "2025.07 – 2025.08", role: "Modeling / Lookdev",       scope: "Personal", focus: "Hard Surface",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "02House",             label: "House",             category: "Environment",  ratio: 16 / 9,  desc: "주거 공간의 구조와 채광을 스터디한 씬.",      date: "2025.07", period: "2025.03 – 2025.07", role: "Modeling / Texturing",     scope: "Personal", focus: "Interior",          pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
-  { id: "03Zbrush",            label: "Zbrush",            category: "Sculpt",       ratio: 1,       desc: "유기적 형태 스컬프팅 연습 시리즈.",          date: "2025.05", period: "2025.05 – 진행중",   role: "Sculpting",                scope: "Personal", focus: "Organic Form",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "10Desert",           label: "Desert",           category: "Environment",  ratio: 16 / 9,  desc: "사막 한가운데 자리한 판타지 신전을 콘셉트로 제작한 환경 작업입니다.\n반복 가능한 건축 모듈과 주변 에셋을 조합해 넓은 신전 공간을 구성했으며, 초기 공간 구성과 후면의 대형 신전 제작에는 Meshy AI를 활용했습니다.",           date: "2026.08", period: "2026.04 – 2026.08", role: "Environment / Lighting",  scope: "Personal", focus: "Atmosphere",       pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "09Gate",              label: "Gate",              category: "Prop",  ratio: 16 / 9,  desc: "고딕 건축의 아치와 석조 장식을 바탕으로, 웅장하고 장식적인 분위기의 게이트 에셋을 제작했습니다.\n큰 아치 구조를 중심으로 조각과 반복 장식을 배치해 형태의 깊이와 건축적인 인상이 잘 드러나도록 디자인했습니다.",       date: "2026.04", period: "2026.01 – 2026.04", role: "Modeling / Lookdev",       scope: "Personal", focus: "Architecture",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5", sourceLabel: "Shrubland Landscape Environment", sourceUrl: "https://www.fab.com/listings/eb3e4466-17bd-44a5-b884-8dbf9a6e6ff3" },
+  { id: "06Pillar",            label: "Pillar",            category: "Prop",  ratio: 9 / 16,  desc: "인도 사원 건축에서 볼 수 있는 화려한 석조 장식을 참고해 제작한 기둥 에셋입니다.\n단단한 기둥 형태 위에 식물과 문양을 연상시키는 조각 요소를 더해, 장식이 풍부한 신전 공간에 어울리도록 디자인했습니다.",        date: "2026.01", period: "2025.12 – 2026.01", role: "Sculpting / Texturing",    scope: "Personal", focus: "Weathering",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5", sourceLabel: "The Ruins of Solis Temple", sourceUrl: "https://www.fab.com/listings/7b463b18-2b65-4825-81af-9f34da7072af" },
+  { id: "08Trebuchet",         label: "Trebuchet",         category: "Prop", ratio: 1.4,     desc: "중세 전장에 배치되는 대형 공성 병기를 콘셉트로 제작한 투석기 프랍입니다.\n두꺼운 목재 프레임과 큰 바퀴를 중심으로 로프와 금속 부품을 구성해, 투석기 특유의 묵직한 구조와 기계적인 형태가 잘 드러나도록 작업했습니다.",        date: "2025.12", period: "2025.10 – 2025.12", role: "Modeling",                 scope: "Personal", focus: "Mechanical",        pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5", sourceLabel: "Modular Medieval Environment", sourceUrl: "https://www.fab.com/listings/4cd36577-70b3-4c10-a63c-4943afbabf0b" },
+  { id: "07Alley",             label: "Alley",             category: "Prop",  ratio: 1,       desc: "건물과 각종 구조물이 밀집된 도심의 좁은 골목을 콘셉트로 제작한 환경 작업입니다.\n배관과 간판, 생활 소품을 공간 곳곳에 배치해 복잡한 골목 특유의 밀도와 생활감이 자연스럽게 느껴지도록 구성했습니다.",        date: "2025.10", period: "2025.09 – 2025.10", role: "Modeling / Lighting",      scope: "Personal", focus: "Mood & Lighting",   pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "05Computer",          label: "Computer",          category: "Prop",         ratio: 1,       desc: "레트로 전자기기와 미래적인 디자인 요소를 결합해 제작한 컴퓨터 프랍입니다.\n둥근 플라스틱 바디와 화면, 버튼, 스티커 등의 디테일을 활용해 레트로 퓨처리즘 특유의 아날로그하고 기계적인 분위기를 표현했습니다.",   date: "2025.09", period: "2025.08 – 2025.09", role: "Modeling / Texturing",     scope: "Personal", focus: "Prop Design",       pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5", sourceLabel: "Apartment Tech Props", sourceUrl: "https://www.fab.com/listings/1d9edbd4-9869-4f4b-9242-8fcfec52c43d" },
+  { id: "04Sci-fi Container",  label: "Sci-fi Container",  category: "Prop", ratio: 1,       desc: "산업용 장비를 기반으로 디자인한 SF 스타일의 박스형 프랍입니다.\n단단한 프레임과 큰 패널 구조를 중심으로 기계적인 디테일과 그래픽 요소를 더해, 기능적인 장비의 느낌이 잘 드러나도록 제작했습니다.",        date: "2025.08", period: "2025.07 – 2025.08", role: "Modeling / Lookdev",       scope: "Personal", focus: "Hard Surface",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "02House",             label: "House",             category: "Environment",  ratio: 16 / 9,  desc: "중세 목조 건축을 바탕으로 판타지적인 요소를 더한 마법상점을 제작했습니다.\n목재 프레임과 붉은 지붕을 중심으로 돌출된 구조와 다양한 창문, 장식 요소를 배치해 마법상점 특유의 개성 있는 실루엣과 분위기를 표현했습니다.",      date: "2025.07", period: "2025.03 – 2025.07", role: "Modeling / Texturing",     scope: "Personal", focus: "Interior",          pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
+  { id: "03Zbrush",            label: "Zbrush",            category: "Sculpt",       ratio: 1,       desc: "자연 암석의 불규칙한 형태와 거친 표면을 중심으로 제작한 ZBrush 스컬프팅 작업입니다.\n큰 암석 덩어리와 실루엣을 먼저 구성한 뒤 크기가 다른 파손면과 작은 암석을 더해 자연스러운 구조와 깊이감을 표현했습니다.",          date: "2025.05", period: "2025.05 – 진행중",   role: "Sculpting",                scope: "Personal", focus: "Organic Form",      pipeline: "3ds Max · ZBrush · Substance Painter · Unreal Engine 5" },
 ];
 
 /* 한 줄에 몇 개씩 넣을지 (기존과 동일하게 3개씩 끊어서 한 줄). 순서를 유지한 채
@@ -518,6 +518,19 @@ async function openDetail(id) {
   document.getElementById("detail-desc").textContent = project.desc;
   document.getElementById("detail-period").textContent = project.period || "";
   document.getElementById("detail-tools").textContent = project.pipeline || "";
+
+  // 배경 소스 표기 — sourceLabel/sourceUrl이 있는 프로젝트만 표시하고, 없으면 통째로 숨긴다.
+  const sourceBlock = document.getElementById("detail-source");
+  const sourceName = document.getElementById("detail-source-name");
+  const sourceLink = document.getElementById("detail-source-link");
+  if (project.sourceLabel && project.sourceUrl) {
+    sourceName.textContent = `배경 소스 : ${project.sourceLabel}`;
+    sourceLink.textContent = project.sourceUrl;
+    sourceLink.href = project.sourceUrl;
+    sourceBlock.style.display = "block";
+  } else {
+    sourceBlock.style.display = "none";
+  }
 
   const nextIdx = (ALL_PROJECTS.indexOf(project) + 1) % ALL_PROJECTS.length;
   const nextProject = ALL_PROJECTS[nextIdx];

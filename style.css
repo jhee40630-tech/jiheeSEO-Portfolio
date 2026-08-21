@@ -545,7 +545,21 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   font-family:var(--f-display); font-size:2.25rem; text-transform:uppercase;
   margin-bottom:16px; line-height:1.1;
 }
-.detail-desc{color:var(--text-dim); font-size:0.9375rem; margin-bottom:28px;}
+.detail-desc{color:var(--text-dim); font-size:0.9375rem; margin-bottom:28px; white-space:pre-line;}
+
+/* 배경 소스 표기 — 상세 설명보다 확실히 작고 흐린 회색으로, 본문과는 한 줄 정도
+   떨어져 보이도록 위쪽에 여백을 준다. 소스가 없는 프로젝트는 JS에서 통째로 숨김. */
+.detail-source{
+  margin-top:-6px; margin-bottom:28px;
+}
+.detail-source-name{
+  font-size:0.75rem; color:var(--text-faint); line-height:1.5; margin-bottom:4px;
+}
+.detail-source-link{
+  display:block; font-size:0.75rem; color:var(--text-faint); line-height:1.5;
+  text-decoration:none; word-break:break-all; transition:color .2s;
+}
+.detail-source-link:hover{color:var(--text-dim); text-decoration:underline;}
 
 .detail-meta{
   display:grid; grid-template-columns:1fr 1fr; gap:18px 12px;
