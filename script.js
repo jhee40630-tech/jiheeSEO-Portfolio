@@ -86,6 +86,18 @@ function projectBase(id) {
   return `${IMAGE_ROOT}/${id}`;
 }
 
+/* ===================== 사이트 전체 "확장자 학습" 캐시 =====================
+   지금까지는 썸네일/1번 슬롯을 찾을 때마다 매번 webp/WEBP/png/jpg/jpeg/PNG/JPG/JPEG
+   8종을 전부 동시에 요청해서 그 중 성공한 것 하나를 골랐다. 실제 파일 용량은
+   100~270KB로 작은데도 "로딩"이 눈에 보였던 진짜 원인이 바로 이거다 — 실제 이미지를
+   내려받기 전에, 존재하지도 않는 확장자 7개에 대한 404 왕복을 먼저 전부 기다려야
+   했기 때문(파일 용량 문제가 아니라 "요청 방식" 문제).
+   지금부터는 사이트에서 처음으로 어떤 확장자가 맞았는지 기억해두고, 다음 탐색부터는
+   그 확장자 "하나만" 먼저 요청한다 — 맞으면(대부분의 경우) 나머지 7개는 아예 요청조차
+   하지 않는다. 틀렸을 때만(예외적인 폴더) 기존처럼 전체 후보를 다시 훑는다. */
+let siteKnownExt = "webp";
+let siteKnownVideoExt = "mp4";
+
 /** 파일 하나가 실제로 이미지로 로드되는지 확인 (Promise) */
 function probeImage(url) {
   return new Promise((resolve) => {
@@ -190,22 +202,34 @@ async function resolveProjectImages(id) {
   // (동영상 하나만 있거나 이미지 하나만 있으면 그것만 넣는다).
   const [firstImg, firstVid] = await Promise.all([
     (async () => {
+      if (siteKnownExt) {
+        const url = `${base}/1.${siteKnownExt}`;
+        if (await probeImage(url)) return { url, type: "image" };
+      }
       const hits = await Promise.all(
         EXTENSIONS.map(async (ext) => {
           const url = `${base}/1.${ext}`;
           return (await probeImage(url)) ? { url, type: "image" } : null;
         })
       );
-      return hits.find(Boolean) || null;
+      const found = hits.find(Boolean) || null;
+      if (found) siteKnownExt = found.url.split(".").pop();
+      return found;
     })(),
     (async () => {
+      if (siteKnownVideoExt) {
+        const url = `${base}/1.${siteKnownVideoExt}`;
+        if (await probeVideo(url)) return { url, type: "video" };
+      }
       const hits = await Promise.all(
         VIDEO_EXTENSIONS.map(async (ext) => {
           const url = `${base}/1.${ext}`;
           return (await probeVideo(url)) ? { url, type: "video" } : null;
         })
       );
-      return hits.find(Boolean) || null;
+      const found = hits.find(Boolean) || null;
+      if (found) siteKnownVideoExt = found.url.split(".").pop();
+      return found;
     })(),
   ]);
 
@@ -258,13 +282,19 @@ function getProjectImages(id) {
    thu2를 더 이상 탐색하지 않아 요청 수도 줄어듭니다(로딩 최적화 겸용).
    thu1이 없는 폴더는 기존처럼 1.* 이미지를 그대로 사용(하위 호환). */
 async function resolveThumb(base, name) {
+  if (siteKnownExt) {
+    const url = `${base}/${name}.${siteKnownExt}`;
+    if (await probeImage(url)) return url;
+  }
   const hits = await Promise.all(
     EXTENSIONS.map(async (ext) => {
       const url = `${base}/${name}.${ext}`;
       return (await probeImage(url)) ? url : null;
     })
   );
-  return hits.find(Boolean) || null;
+  const found = hits.find(Boolean) || null;
+  if (found) siteKnownExt = found.split(".").pop();
+  return found;
 }
 
 /* name으로 찾을 파일명을 바꿀 수 있음 — 기본은 thu1, University 2개 섹션은 tub1 사용 */
