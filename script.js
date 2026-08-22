@@ -416,22 +416,43 @@ function buildGrid() {
 /** resolveMediaUrl과 반대로, "동영상"을 먼저 찾고 없을 때만 이미지로 넘어간다.
     히어로 배너 전용 — 상세페이지/썸네일은 원래대로 이미지 우선(resolveMediaUrl)을 그대로 쓴다. */
 async function resolveHeroMedia(base, n) {
+  // 이미 다른 폴더에서 확인된 확장자(siteKnownVideoExt)가 있으면 그것부터 1회만
+  // 요청한다. 성공하면 나머지 비디오 확장자는 아예 요청하지 않는다. 힌트가 없거나
+  // 실패했을 때만(폴더가 예외적으로 다른 확장자를 쓰는 경우) 기존과 동일하게
+  // 전체 VIDEO_EXTENSIONS를 병렬로 탐색하는 폴백을 그대로 실행한다.
+  if (siteKnownVideoExt) {
+    const hintUrl = `${base}/${n}.${siteKnownVideoExt}`;
+    if (await probeVideo(hintUrl)) return { url: hintUrl, type: "video" };
+  }
+
   const vidHits = await Promise.all(
-    VIDEO_EXTENSIONS.map(async (ext) => {
+    VIDEO_EXTENSIONS.filter((ext) => ext !== siteKnownVideoExt).map(async (ext) => {
       const url = `${base}/${n}.${ext}`;
       return (await probeVideo(url)) ? { url, type: "video" } : null;
     })
   );
   const foundVideo = vidHits.find(Boolean);
-  if (foundVideo) return foundVideo;
+  if (foundVideo) {
+    siteKnownVideoExt = foundVideo.url.split(".").pop();
+    return foundVideo;
+  }
+
+  // 이미지 쪽도 동일한 방식: 이미 확인된 확장자(siteKnownExt)를 먼저 1회 시도하고,
+  // 없거나 실패했을 때만 기존 EXTENSIONS 전체 탐색으로 폴백한다.
+  if (siteKnownExt) {
+    const hintUrl = `${base}/${n}.${siteKnownExt}`;
+    if (await probeImage(hintUrl)) return { url: hintUrl, type: "image" };
+  }
 
   const imgHits = await Promise.all(
-    EXTENSIONS.map(async (ext) => {
+    EXTENSIONS.filter((ext) => ext !== siteKnownExt).map(async (ext) => {
       const url = `${base}/${n}.${ext}`;
       return (await probeImage(url)) ? { url, type: "image" } : null;
     })
   );
-  return imgHits.find(Boolean) || null;
+  const foundImage = imgHits.find(Boolean) || null;
+  if (foundImage) siteKnownExt = foundImage.url.split(".").pop();
+  return foundImage;
 }
 
 /* hero banner: 이미지/동영상 확장자를 모두 탐색해서, 찾은 쪽만 보여준다.
