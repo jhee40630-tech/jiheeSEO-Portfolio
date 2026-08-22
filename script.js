@@ -96,11 +96,15 @@ function probeImage(url) {
   });
 }
 
-/** 파일 하나가 실제로 동영상으로 로드되는지 확인 (Promise) */
+/** 파일 하나가 실제로 동영상으로 로드되는지 확인 (Promise)
+    Chrome은 자동재생 정책상 muted/playsInline이 안 잡혀 있으면 재생을 막을 수 있어서
+    프로브용 video 엘리먼트에도 동일하게 설정해준다. */
 function probeVideo(url) {
   return new Promise((resolve) => {
     const v = document.createElement("video");
     v.preload = "metadata";
+    v.muted = true;
+    v.playsInline = true;
     v.onloadedmetadata = () => resolve(true);
     v.onerror = () => resolve(false);
     v.src = url;
@@ -407,12 +411,33 @@ async function setHeroImage() {
   const heroVideo = document.getElementById("hero-video");
   const heroImg = document.getElementById("hero-img");
   const base = heroImg.dataset.base;
+
+  if (!heroVideo.dataset.errorLoggerAttached) {
+    heroVideo.dataset.errorLoggerAttached = "1";
+    heroVideo.addEventListener("error", () => {
+      const err = heroVideo.error;
+      if (!err) return;
+      // 1=ABORTED 2=NETWORK 3=DECODE(코덱 문제) 4=SRC_NOT_SUPPORTED(형식/경로 문제)
+      console.warn(`[hero-video] MediaError code=${err.code} src=${heroVideo.currentSrc}`);
+    });
+  }
+
   const media = await resolveHeroMedia(base, 1);
   if (!media) return;
   if (media.type === "video") {
+    // Chrome은 autoplay 속성만으로는 재생을 보장하지 않을 때가 있어서(특히 src를 JS로
+    // 나중에 지정한 경우), muted/playsInline을 속성뿐 아니라 프로퍼티로도 명시하고
+    // load()를 호출한 뒤 명시적으로 play()를 시도한다. play()가 막히면(브라우저 정책,
+    // 코덱 미지원 등) 화면은 그대로 두고 콘솔에만 원인을 남긴다(디자인/레이아웃 불변).
+    heroVideo.muted = true;
+    heroVideo.playsInline = true;
     heroVideo.src = media.url;
     heroVideo.style.display = "block";
     heroImg.style.display = "none";
+    heroVideo.load();
+    heroVideo.play().catch((err) => {
+      console.warn(`[hero-video] play() failed for ${media.url}:`, err.name, err.message);
+    });
   } else {
     heroImg.src = media.url;
     heroImg.style.display = "block";
@@ -477,6 +502,14 @@ const detail = document.getElementById("detail");
 const detailFrame = document.getElementById("detail-frame");
 const detailImg = document.getElementById("detail-img");
 const detailVideo = document.getElementById("detail-video");
+// Chrome에서만 재생이 안 될 때 원인(코덱 미지원/네트워크/경로 오류 등)을 콘솔에서
+// 바로 확인할 수 있도록 MediaError 코드를 로깅한다. 화면에는 아무것도 노출하지 않는다.
+detailVideo.addEventListener("error", () => {
+  const err = detailVideo.error;
+  if (!err) return;
+  // 1=ABORTED 2=NETWORK 3=DECODE(코덱 문제) 4=SRC_NOT_SUPPORTED(형식/경로 문제)
+  console.warn(`[detail-video] MediaError code=${err.code} src=${detailVideo.currentSrc}`);
+});
 const detailCount = document.getElementById("detail-count");
 const detailThumbs = document.getElementById("detail-thumbs");
 const detailClose = document.getElementById("detail-close");
@@ -585,8 +618,12 @@ async function openDetail(id) {
       media = document.createElement("video");
       media.src = item.url;
       media.muted = true;
+      media.setAttribute("muted", ""); // 속성으로도 명시 (Chrome 자동재생 정책 대비)
       media.preload = "none"; // 실제로 클릭해서 볼 때까지 다운로드하지 않음 (로딩 최적화)
       media.playsInline = true;
+      media.onerror = () => {
+        console.warn(`[thumb-video] failed to load ${item.url} — 코덱/대소문자 경로를 확인하세요.`);
+      };
     } else {
       media = document.createElement("img");
       media.loading = "lazy"; // 화면 밖에 있는 썸네일은 스크롤해서 가까워질 때만 로드 (로딩 최적화)
@@ -617,9 +654,14 @@ function showImage(i) {
     detailImg.style.display = "none";
     detailImg.removeAttribute("src");
     detailVideo.style.display = "block";
+    detailVideo.muted = true;
+    detailVideo.playsInline = true;
     detailVideo.src = item.url;
+    detailVideo.load();
     detailVideo.currentTime = 0;
-    detailVideo.play().catch(() => {});
+    detailVideo.play().catch((err) => {
+      console.warn(`[detail-video] play() failed for ${item.url}:`, err.name, err.message);
+    });
   } else {
     detailVideo.pause();
     detailVideo.style.display = "none";
