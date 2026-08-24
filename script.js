@@ -192,13 +192,20 @@ async function resolveSlotFast(base, n, known) {
     GAP_TOLERANCE개 이상 비어 있을 때만 "여기서 끝"이라고 판단해서 멈춘다. */
 const GAP_TOLERANCE = 3;
 
-async function resolveProjectImages(id) {
-  const base = projectBase(id);
-  const media = [];
-
+/* ===================== 1번 슬롯(첫 이미지/동영상) 우선 탐색 =====================
+   기존에는 상세페이지를 열 때 "1번부터 마지막 번호까지 전체 슬라이드"를 다 찾을
+   때까지 기다린 뒤에야 첫 화면을 보여줬다. 파일 하나하나는 가벼워도, 슬라이드가
+   여러 장인 프로젝트는 그만큼 배치(Promise.all) 왕복이 여러 번 반복되고, 그 전체
+   시간만큼 사용자는 "로딩"을 체감하게 된다 — 실제로는 이미 화면에 띄울 수 있는
+   1번 이미지가 벌써 도착해 있는데도 나머지 슬라이드를 기다리느라 안 보여주고
+   있었던 것.
+   지금부터는 1번 슬롯만 먼저 별도로(그리고 결과를 캐시해서) 확인하고, 상세페이지는
+   그 결과가 오는 즉시 첫 화면을 띄운다. 2번 슬롯부터 이어지는 나머지 탐색은
+   기존 로직 그대로 별도로 진행되며, 결과가 늦게 오더라도 이미 보이고 있는 첫
+   이미지에는 전혀 영향을 주지 않는다(썸네일 목록만 나중에 채워짐). */
+async function resolveFirstSlide(base) {
   // 1번 슬롯은 이미지와 동영상이 "같이" 있을 수 있다 (예: 1.webp + 1.mp4).
-  // 예전에는 이미지가 있으면 동영상은 아예 찾아보지도 않고 버렸는데,
-  // 이제는 둘 다 있으면 동영상을 먼저, 그다음 이미지를 넣어서 둘 다 보여준다
+  // 둘 다 있으면 동영상을 먼저, 그다음 이미지를 넣어서 둘 다 보여준다
   // (동영상 하나만 있거나 이미지 하나만 있으면 그것만 넣는다).
   const [firstImg, firstVid] = await Promise.all([
     (async () => {
@@ -233,17 +240,34 @@ async function resolveProjectImages(id) {
     })(),
   ]);
 
-  if (!firstImg && !firstVid) return media;
+  const media = [];
+  if (firstVid) media.push(firstVid);
+  if (firstImg) media.push(firstImg);
+  return media;
+}
+
+/* 1번 슬롯 결과를 프로젝트당 한 번만 탐색하도록 캐시. resolveProjectImages도
+   이 캐시를 그대로 재사용하므로(아래), 그리드에서 마우스오버로 미리 불러둔
+   결과와 상세페이지 진입 시의 요청이 겹쳐도 네트워크 요청이 중복되지 않는다. */
+const firstSlideCache = new Map();
+function getFirstSlideMedia(id) {
+  if (!firstSlideCache.has(id)) {
+    firstSlideCache.set(id, resolveFirstSlide(projectBase(id)));
+  }
+  return firstSlideCache.get(id);
+}
+
+async function resolveProjectImages(id) {
+  const base = projectBase(id);
+  // 1번 슬롯은 별도 캐시(firstSlideCache)에서 그대로 재사용 — 중복 탐색 방지.
+  const media = [...(await getFirstSlideMedia(id))];
+  if (media.length === 0) return media;
 
   const known = { ext: null, videoExt: null };
-  if (firstVid) {
-    media.push(firstVid);
-    known.videoExt = firstVid.url.split(".").pop();
-  }
-  if (firstImg) {
-    media.push(firstImg);
-    known.ext = firstImg.url.split(".").pop();
-  }
+  const firstVid = media.find((m) => m.type === "video");
+  const firstImg = media.find((m) => m.type === "image");
+  if (firstVid) known.videoExt = firstVid.url.split(".").pop();
+  if (firstImg) known.ext = firstImg.url.split(".").pop();
 
   let consecutiveGaps = 0;
 
@@ -646,11 +670,20 @@ async function openDetail(id) {
     detailFrame.classList.add("loading");
   }
 
-  currentImages = await getProjectImages(id);
+  // 예전에는 "이 프로젝트의 슬라이드 전체(1번~마지막 번호)"를 다 찾을 때까지 기다린
+  // 뒤에야 첫 화면을 보여줬다 — 파일 자체는 가벼워도, 슬라이드가 여러 장이면 그만큼
+  // 배치 탐색 왕복이 반복되고, 그 시간 전부가 그대로 "로딩"으로 체감됐다.
+  // 지금은 1번 슬롯(getFirstSlideMedia)만 먼저 기다려서 화면에 즉시 띄우고,
+  // 나머지 슬라이드(fullListPromise)는 뒤이어 백그라운드로 계속 찾아서 썸네일
+  // 목록에만 채워 넣는다 — 이미 보여주고 있는 첫 이미지는 다시 불러오지 않는다.
+  const fullListPromise = getProjectImages(id);
+  const firstSlideMedia = await getFirstSlideMedia(id);
+
   detailFrame.classList.remove("loading");
   detailFrame.classList.remove("is-preview");
 
-  if (currentImages.length === 0) {
+  if (firstSlideMedia.length === 0) {
+    currentImages = [];
     detailImg.removeAttribute("src");
     detailVideo.pause();
     detailVideo.removeAttribute("src");
@@ -660,7 +693,26 @@ async function openDetail(id) {
     return;
   }
 
-  currentImages.forEach((item, i) => {
+  currentImages = firstSlideMedia;
+  buildDetailThumbs(currentImages, project.label);
+  showImage(0);
+
+  fullListPromise.then((allMedia) => {
+    if (currentProject !== project) return; // 그 사이 다른 프로젝트로 이동했으면 무시
+    currentImages = allMedia;
+    buildDetailThumbs(currentImages, project.label);
+    detailCount.textContent = `${currentIndex + 1} / ${currentImages.length}`;
+  });
+}
+
+/** 상세페이지 오른쪽 썸네일 목록(detail-thumbs)을 mediaList 기준으로 새로 그린다.
+    currentIndex에 해당하는 항목에는 is-active를 다시 표시해, 목록이 나중에
+    다시 그려지더라도(= 나머지 슬라이드가 늦게 도착했을 때) 지금 보고 있는
+    슬라이드의 활성 표시가 그대로 유지된다. */
+function buildDetailThumbs(mediaList, label) {
+  detailThumbs.innerHTML = "";
+
+  mediaList.forEach((item, i) => {
     const wrap = document.createElement("div");
     wrap.className = "thumb-item";
 
@@ -680,20 +732,19 @@ async function openDetail(id) {
       media.loading = "lazy"; // 화면 밖에 있는 썸네일은 스크롤해서 가까워질 때만 로드 (로딩 최적화)
       media.decoding = "async";
       media.src = item.url;
-      media.alt = `${project.label} ${i + 1}`;
+      media.alt = `${label} ${i + 1}`;
     }
 
-    const label = document.createElement("span");
-    label.className = "thumb-item-label";
-    label.textContent = `${project.label.toUpperCase()} ${String(i + 1).padStart(2, "0")}`;
+    const thumbLabel = document.createElement("span");
+    thumbLabel.className = "thumb-item-label";
+    thumbLabel.textContent = `${label.toUpperCase()} ${String(i + 1).padStart(2, "0")}`;
 
     wrap.appendChild(media);
-    wrap.appendChild(label);
+    wrap.appendChild(thumbLabel);
     wrap.addEventListener("click", () => showImage(i));
+    wrap.classList.toggle("is-active", i === currentIndex);
     detailThumbs.appendChild(wrap);
   });
-
-  showImage(0);
 }
 
 function showImage(i) {
