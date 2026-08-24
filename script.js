@@ -614,12 +614,29 @@ function goToProject(offset) {
   history.pushState(null, "", `#work/${nextProject.id}`);
 }
 
+/* ===================== GA4: 상세페이지 오픈 = 가상 페이지뷰 =====================
+   <head>에 심어둔 gtag 설치는 "최초 페이지 로드" 1회에 대해서만 자동으로
+   page_view를 보낸다. 이 사이트는 새로고침 없이 해시(#work/아이디)만 바뀌면서
+   작품 상세페이지를 열고 닫는 SPA 방식이라, 상세페이지를 열 때마다 이 함수에서
+   GA4로 page_view 이벤트를 직접 보내줘야 "어떤 작품이 얼마나 조회됐는지"가
+   애널리틱스(페이지 및 화면 보고서 등)에 개별 페이지뷰로 잡힌다. */
+function trackDetailPageView(project) {
+  if (typeof gtag !== "function") return; // GA4 스크립트가 없거나 로드 전이면 조용히 무시
+  const path = `/#work/${project.id}`;
+  gtag("event", "page_view", {
+    page_title: `${project.label} · Jihee Seo`,
+    page_location: `${location.origin}${location.pathname}${path}`,
+    page_path: path,
+  });
+}
+
 async function openDetail(id) {
   closeZoom();
   const project = ALL_PROJECTS.find((p) => p.id === id);
   if (!project) return;
   currentProject = project;
   currentIndex = 0;
+  trackDetailPageView(project);
 
   document.getElementById("detail-category").textContent = project.category;
   document.getElementById("detail-title").textContent = project.label;
