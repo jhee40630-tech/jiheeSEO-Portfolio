@@ -593,10 +593,7 @@ const detailNext = document.getElementById("detail-next");
 const detailNextProject = document.getElementById("detail-next-project");
 const detailNextProjectName = document.getElementById("detail-next-project-name");
 
-const zoomOverlay = document.getElementById("zoom-overlay");
-const zoomViewport = document.getElementById("zoom-viewport");
-const zoomImg = document.getElementById("zoom-img");
-const zoomClose = document.getElementById("zoom-close");
+const detailViewer = document.querySelector(".detail-viewer");
 
 let currentProject = null;
 let currentImages = [];
@@ -766,6 +763,7 @@ function buildDetailThumbs(mediaList, label) {
 
 function showImage(i) {
   if (!currentImages.length) return;
+  closeZoom(); // 사진이 바뀌면 확대 상태는 항상 초기화
   currentIndex = (i + currentImages.length) % currentImages.length;
   const item = currentImages[currentIndex];
 
@@ -798,127 +796,137 @@ function showImage(i) {
   });
 }
 
-/* ===================== ZOOM / PAN (상세페이지 메인 이미지 클릭 → 확대 후 드래그로 이동) =====================
-   클릭하면 이미지를 화면 가득 채우는 뷰로 확대하고(ZOOM_SCALE배), 마우스/터치로 누른 채
-   끌면 확대된 이미지 안에서 보이는 부분이 이동한다. 이미지가 화면보다 작아지는 방향으로는
-   못 움직이게 매 프레임 범위를 계산해서 clamp한다. */
+/* ===================== 인라인 확대 (상세페이지 메인 이미지 클릭 → 그 자리에서 확대) =====================
+   예전에는 클릭하면 화면 전체를 덮는 별도의 확대 오버레이(새 창처럼 보이는 뷰)가 열렸다.
+   지금은 상세페이지를 그대로 둔 채, 보고 있는 이미지 프레임 안에서 바로 확대된다.
+   - 이미지를 클릭 → 확대
+   - 확대 상태에서 마우스를 움직이면 커서 위치를 따라 보이는 부분이 이동(pan)
+   - 한 번 더 클릭 → 원래 크기로 복귀
+   - ESC, 슬라이드 변경, 다른 프로젝트로 이동 시에도 자동으로 확대가 풀린다. */
 const ZOOM_SCALE = 2.2;
+let isZoomed = false;
 let zoomPanX = 0;
 let zoomPanY = 0;
-let zoomDragging = false;
-let zoomStartX = 0;
-let zoomStartY = 0;
-let zoomStartPanX = 0;
-let zoomStartPanY = 0;
 
 function zoomClampBounds() {
-  const viewportRect = zoomViewport.getBoundingClientRect();
-  // transform 적용 전 레이아웃 크기(= object-fit:contain으로 화면에 맞춰진 크기) 기준으로
-  // ZOOM_SCALE을 곱해서 "확대된 실제 렌더 크기"를 구한다.
-  const baseW = zoomImg.offsetWidth;
-  const baseH = zoomImg.offsetHeight;
-  const scaledW = baseW * ZOOM_SCALE;
-  const scaledH = baseH * ZOOM_SCALE;
-  const maxX = Math.max(0, (scaledW - viewportRect.width) / 2);
-  const maxY = Math.max(0, (scaledH - viewportRect.height) / 2);
+  const viewRect = detailViewer.getBoundingClientRect();
+  // transform 적용 전 레이아웃 크기(= object-fit:contain으로 프레임에 맞춰진 크기) 기준으로
+  // ZOOM_SCALE을 곱해 "확대된 실제 렌더 크기"를 구한다.
+  const scaledW = detailImg.offsetWidth * ZOOM_SCALE;
+  const scaledH = detailImg.offsetHeight * ZOOM_SCALE;
+  const maxX = Math.max(0, (scaledW - viewRect.width) / 2);
+  const maxY = Math.max(0, (scaledH - viewRect.height) / 2);
   return { maxX, maxY };
 }
 
 function zoomApplyTransform() {
-  zoomImg.style.transform = `translate(${zoomPanX}px, ${zoomPanY}px) scale(${ZOOM_SCALE})`;
+  detailImg.style.transform = isZoomed
+    ? `translate(${zoomPanX}px, ${zoomPanY}px) scale(${ZOOM_SCALE})`
+    : "";
 }
 
-function openZoom(src) {
-  if (!src) return;
-  zoomImg.src = src;
+/** 커서 위치(프레임 기준 0~1)에 맞춰 확대된 이미지에서 보이는 영역을 옮긴다.
+    왼쪽 끝을 보면 이미지도 왼쪽 끝, 오른쪽 끝을 보면 오른쪽 끝이 보이도록 반대로 움직인다. */
+function zoomPanToPointer(clientX, clientY) {
+  if (!isZoomed) return;
+  const r = detailViewer.getBoundingClientRect();
+  const px = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+  const py = Math.min(1, Math.max(0, (clientY - r.top) / r.height));
+  const { maxX, maxY } = zoomClampBounds();
+  zoomPanX = (0.5 - px) * 2 * maxX;
+  zoomPanY = (0.5 - py) * 2 * maxY;
+  zoomApplyTransform();
+}
+
+function openZoom(clientX, clientY) {
+  if (detailImg.style.display === "none" || !detailImg.getAttribute("src")) return;
+  isZoomed = true;
+  detailFrame.classList.add("is-zoomed");
   zoomPanX = 0;
   zoomPanY = 0;
   zoomApplyTransform();
-  zoomOverlay.classList.add("is-open");
-  zoomOverlay.setAttribute("aria-hidden", "false");
+  if (typeof clientX === "number") {
+    // 확대 애니메이션이 끝난 뒤의 크기로 pan 범위를 계산해야 하므로 한 프레임 뒤에 맞춘다.
+    requestAnimationFrame(() => zoomPanToPointer(clientX, clientY));
+  }
 }
 
+/* 이름은 예전 그대로 두어(closeZoom) 다른 곳에서 부르던 코드가 그대로 동작한다. */
 function closeZoom() {
-  zoomOverlay.classList.remove("is-open");
-  zoomOverlay.setAttribute("aria-hidden", "true");
-}
-
-detailImg.addEventListener("click", () => {
-  if (detailImg.style.display === "none" || !detailImg.src) return;
-  openZoom(detailImg.src);
-});
-
-/* 브라우저 기본 이미지 드래그(HTML5 dragstart)를 완전히 차단.
-   이게 살아있으면 pointerdown 이후 브라우저가 네이티브 드래그를 가로채서
-   pointermove가 더 이상 발생하지 않고, 커서가 "금지" 아이콘으로 바뀌며,
-   mouseup 시 우리 쪽에서는 "이동이 없었다"고 오판하는 문제가 생긴다. */
-zoomImg.draggable = false;
-zoomImg.addEventListener("dragstart", (e) => e.preventDefault());
-
-/* ---- pan(드래그 이동): 이미지 자체에서 시작해서 이미지 자체에서 끝난다 ----
-   setPointerCapture로 캡처해두면 커서가 이미지 밖으로 나가도 pointermove/up이
-   계속 이 요소로 전달되므로 드래그가 끊기지 않는다. */
-zoomImg.addEventListener("pointerdown", (e) => {
-  if (e.button !== undefined && e.button !== 0) return; // 좌클릭만 pan으로 처리
-  e.preventDefault();
-  e.stopPropagation();
-  zoomDragging = true;
-  zoomStartX = e.clientX;
-  zoomStartY = e.clientY;
-  zoomStartPanX = zoomPanX;
-  zoomStartPanY = zoomPanY;
-  zoomImg.classList.add("is-dragging");
-  zoomImg.setPointerCapture(e.pointerId);
-});
-
-zoomImg.addEventListener("pointermove", (e) => {
-  if (!zoomDragging) return;
-  e.preventDefault();
-  e.stopPropagation();
-  const dx = e.clientX - zoomStartX;
-  const dy = e.clientY - zoomStartY;
-  const { maxX, maxY } = zoomClampBounds();
-  zoomPanX = Math.min(maxX, Math.max(-maxX, zoomStartPanX + dx));
-  zoomPanY = Math.min(maxY, Math.max(-maxY, zoomStartPanY + dy));
+  if (!isZoomed) return;
+  isZoomed = false;
+  detailFrame.classList.remove("is-zoomed");
+  detailImg.classList.remove("is-panning");
+  zoomPanX = 0;
+  zoomPanY = 0;
   zoomApplyTransform();
-});
-
-function endZoomDrag(e) {
-  if (!zoomDragging) return;
-  zoomDragging = false;
-  zoomImg.classList.remove("is-dragging");
-  e.stopPropagation();
-  // 드래그를 끝내도(=마우스를 놓아도) 확대창은 절대 닫히지 않는다 — 닫기는
-  // CLOSE 버튼 또는 이미지 바깥 빈 배경 클릭에서만 일어난다.
 }
-zoomImg.addEventListener("pointerup", endZoomDrag);
-zoomImg.addEventListener("pointercancel", endZoomDrag);
 
-/* 드래그 뒤에 브라우저가 추가로 발생시키는 click 이벤트가 배경 클릭 닫기 로직으로
-   전달되지 않도록 이미지 위에서 멈춘다. */
-zoomImg.addEventListener("click", (e) => e.stopPropagation());
+function toggleZoom(e) {
+  if (isZoomed) closeZoom();
+  else openZoom(e.clientX, e.clientY);
+}
 
-/* ---- backdrop(빈 배경) 클릭으로 닫기 ----
-   zoom-img는 pointer-events가 켜져 있어 이미지 위 클릭은 target이 zoom-img가 되고,
-   이미지 바깥(뷰포트의 빈 여백)을 클릭하면 target이 zoom-viewport 자기 자신이 된다.
-   그래서 target === currentTarget일 때만, 즉 진짜 빈 배경을 직접 클릭했을 때만 닫는다. */
-zoomViewport.addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) closeZoom();
+detailImg.draggable = false;
+detailImg.addEventListener("dragstart", (e) => e.preventDefault());
+detailImg.addEventListener("click", (e) => {
+  e.stopPropagation();
+  toggleZoom(e);
 });
 
-zoomClose.addEventListener("click", closeZoom);
+detailViewer.addEventListener("mousemove", (e) => {
+  if (!isZoomed) return;
+  detailImg.classList.add("is-panning"); // 따라다니는 동안에는 transition을 꺼서 즉각 반응하게
+  zoomPanToPointer(e.clientX, e.clientY);
+});
+
+/* 확대 상태에서 커서가 이미지 영역을 벗어나면 확대를 풀어, 다른 곳을 클릭했을 때
+   예상치 못하게 확대된 채로 남아 있는 상황을 막는다. */
+detailViewer.addEventListener("mouseleave", closeZoom);
 
 window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && zoomOverlay.classList.contains("is-open")) closeZoom();
+  if (e.key === "Escape" && isZoomed) {
+    e.stopPropagation();
+    closeZoom();
+  }
 });
 
 window.addEventListener("resize", () => {
-  if (!zoomOverlay.classList.contains("is-open")) return;
+  if (!isZoomed) return;
   const { maxX, maxY } = zoomClampBounds();
   zoomPanX = Math.min(maxX, Math.max(-maxX, zoomPanX));
   zoomPanY = Math.min(maxY, Math.max(-maxY, zoomPanY));
   zoomApplyTransform();
 });
+
+/* ===================== 마우스 휠로 슬라이드 넘기기 =====================
+   상세페이지의 이미지 영역(.detail-viewer) 위에서 휠을 굴리면 같은 프로젝트 안의
+   다음/이전 사진으로 넘어간다. 오른쪽 썸네일 목록은 원래대로 스크롤된다.
+   트랙패드처럼 아주 잘게 여러 번 들어오는 이벤트에 대비해 누적값 + 쿨다운으로 한 칸씩만 이동한다. */
+let wheelAccum = 0;
+let wheelLockUntil = 0;
+
+detailViewer.addEventListener(
+  "wheel",
+  (e) => {
+    if (!detail.classList.contains("is-open")) return;
+    e.preventDefault(); // 뒤 배경 페이지가 함께 스크롤되지 않게
+    if (currentImages.length < 2) return;
+
+    const now = Date.now();
+    if (now < wheelLockUntil) return;
+
+    wheelAccum += e.deltaY;
+    if (Math.abs(wheelAccum) < 24) return;
+
+    const dir = wheelAccum > 0 ? 1 : -1;
+    wheelAccum = 0;
+    wheelLockUntil = now + 220; // 한 번 넘어간 뒤 잠깐 잠금 — 한 번에 여러 장 건너뛰는 것 방지
+    closeZoom();
+    showImage(currentIndex + dir);
+  },
+  { passive: false }
+);
 
 function closeDetail() {
   closeZoom();
@@ -937,7 +945,7 @@ detailNext.addEventListener("click", () => goToProject(1));
 
 window.addEventListener("keydown", (e) => {
   if (!detail.classList.contains("is-open")) return;
-  if (zoomOverlay.classList.contains("is-open")) return; // 확대 뷰가 열려 있으면 상세페이지 단축키는 잠시 무시
+  if (isZoomed && e.key === "Escape") return; // 확대 중 ESC는 확대만 풀고 상세페이지는 닫지 않는다
   if (e.key === "Escape") closeDetail();
   if (e.key === "ArrowRight") goToProject(1);
   if (e.key === "ArrowLeft") goToProject(-1);

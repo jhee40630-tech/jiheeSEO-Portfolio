@@ -113,7 +113,8 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   display:none; /* JS가 실제로 로드된 쪽(video/img)만 block으로 전환 */
   width:100%;
   height:auto; /* 원본 비율 그대로 — 늘리거나 자르지 않는다 */
-  filter:grayscale(.15) contrast(1.05);
+  /* brightness(.75) = 원본보다 약 25% 어둡게 — 상단 배너 위 흰 타이틀이 더 또렷하게 보인다 */
+  filter:grayscale(.15) contrast(1.05) brightness(.75);
   animation:heroZoom 16s ease-out forwards;
 }
 @keyframes heroZoom{ from{transform:scale(1.08);} to{transform:scale(1);} }
@@ -122,7 +123,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   /* 예전엔 배너 전체를 어둡게 덮었는데, 지금은 텍스트 바로 아래쪽에만 아주 옅게 깔아서
      원본 영상/이미지 밝기는 거의 그대로 보이게 했다. */
   background:
-    linear-gradient(180deg, rgba(14,13,12,0) 60%, rgba(14,13,12,.32) 100%);
+    linear-gradient(180deg, rgba(14,13,12,.10) 0%, rgba(14,13,12,.06) 55%, rgba(14,13,12,.42) 100%);
 }
 .hero-content{
   /* 텍스트 그룹은 .hero를 기준(position:relative)으로 absolute 배치하고
@@ -470,7 +471,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   position:fixed; inset:0; z-index:100;
   background:var(--bg);
   display:grid;
-  grid-template-columns:1fr 380px;
+  grid-template-columns:1fr 300px;
   opacity:0; pointer-events:none;
   transition:opacity .15s ease;
 }
@@ -480,7 +481,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 
 .detail-close{
-  position:absolute; top:20px; right:400px; z-index:5;
+  position:absolute; top:20px; right:320px; z-index:5;
   width:40px; height:40px;
   border:1px solid var(--line); border-radius:50%;
   color:var(--text-dim); font-size:1rem;
@@ -504,7 +505,18 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
   max-width:100%; max-height:100%; object-fit:contain;
   animation:fadeIn .2s ease;
 }
-.detail-frame img{cursor:zoom-in;}
+.detail-frame img{
+  cursor:zoom-in;
+  transform-origin:center center;
+  transition:transform .18s ease-out;
+  will-change:transform;
+  user-select:none; -webkit-user-drag:none;
+}
+/* 상세페이지 메인 이미지를 클릭하면 새 창/전체화면 오버레이가 아니라
+   지금 보고 있는 이 프레임 안에서 그대로 확대된다. 확대 상태에서 마우스를
+   움직이면 커서 위치를 따라 보이는 부분이 이동하고, 한 번 더 클릭하면 원래대로 돌아온다. */
+.detail-frame.is-zoomed img{cursor:zoom-out;}
+.detail-frame.is-zoomed img.is-panning{transition:none;}
 #detail-video{display:none;}
 @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
 
@@ -536,7 +548,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 
 .detail-side{
-  padding:64px 40px 40px;
+  padding:64px 26px 32px;
   overflow-y:hidden;
   border-left:1px solid var(--line);
   display:flex; flex-direction:column;
@@ -623,49 +635,6 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 }
 .detail-next-project .arrow{margin-left:auto; color:var(--rust-soft); transition:.2s;}
 .detail-next-project:hover .arrow{transform:translateX(4px);}
-
-/* ===== ZOOM / PAN OVERLAY =====
-   상세페이지 메인 이미지를 클릭하면 화면 전체를 채우는 확대 뷰가 열리고,
-   마우스(또는 터치)로 드래그해서 확대된 이미지 안을 이동하며 볼 수 있다. */
-.zoom-overlay{
-  position:fixed; inset:0; z-index:200;
-  background:#000;
-  opacity:0; pointer-events:none;
-  transition:opacity .25s ease;
-}
-.zoom-overlay.is-open{opacity:1; pointer-events:auto;}
-
-.zoom-close{
-  position:absolute; top:20px; left:20px; z-index:5;
-  padding:10px 18px;
-  border:1px solid var(--line);
-  background:rgba(14,13,12,.6);
-  font-family:var(--f-mono); font-size:0.75rem; letter-spacing:.1em;
-  color:var(--text-dim);
-  transition:.2s;
-}
-.zoom-close:hover{color:#fff; border-color:var(--rust-soft);}
-
-.zoom-viewport{
-  position:relative;
-  width:100%; height:100%;
-  overflow:hidden;
-  display:flex; align-items:center; justify-content:center;
-  touch-action:none; /* 브라우저 기본 터치 스크롤/줌 대신 직접 드래그를 처리 */
-}
-
-#zoom-img{
-  max-width:100%; max-height:100%;
-  width:auto; height:auto;
-  object-fit:contain;
-  transform-origin:center center;
-  will-change:transform;
-  user-select:none;
-  -webkit-user-drag:none;
-  touch-action:none;
-  cursor:grab;
-}
-#zoom-img.is-dragging{cursor:grabbing;}
 
 /* ===== FOOTER ===== */
 .footer{padding:8vh var(--edge) 6vh; border-top:1px solid var(--line);}
