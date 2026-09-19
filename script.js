@@ -749,12 +749,11 @@ function buildDetailThumbs(mediaList, label) {
       media.alt = `${label} ${i + 1}`;
     }
 
-    const thumbLabel = document.createElement("span");
-    thumbLabel.className = "thumb-item-label";
-    thumbLabel.textContent = `${label.toUpperCase()} ${String(i + 1).padStart(2, "0")}`;
+    // 예전에는 썸네일 아래에 "GATE 03" 같은 라벨을 붙였지만, 이제는 이미지만
+    // 세로로 쭉 이어 붙여 목록이 더 깔끔하고 한눈에 들어오게 한다.
+    if (media.tagName === "IMG") media.alt = `${label} ${i + 1}`;
 
     wrap.appendChild(media);
-    wrap.appendChild(thumbLabel);
     wrap.addEventListener("click", () => showImage(i));
     wrap.classList.toggle("is-active", i === currentIndex);
     detailThumbs.appendChild(wrap);
