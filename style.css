@@ -411,7 +411,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 .about-copied.is-visible{opacity:1;}
 .about-bio-lead{
   font-family:var(--f-body); font-weight:500;
-  font-size:1.25rem; line-height:1.5;
+  font-size:1.2rem; line-height:1.5;
   color:var(--text); margin-top:24px; max-width:none;
 }
 .about-bio-line{display:block; white-space:nowrap;}
