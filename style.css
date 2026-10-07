@@ -402,12 +402,19 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 .about-contact{
   font-family:var(--f-mono); font-size:0.8125rem; letter-spacing:.06em;
   color:var(--text-faint); margin-top:20px;
+  position:relative; display:inline-block; cursor:pointer;
 }
+.about-copied{
+  position:absolute; left:100%; top:0; margin-left:12px;
+  color:var(--rust); opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.about-copied.is-visible{opacity:1;}
 .about-bio-lead{
   font-family:var(--f-body); font-weight:500;
   font-size:1.5rem; line-height:1.5;
-  color:var(--text); margin-top:24px; max-width:520px;
+  color:var(--text); margin-top:24px; max-width:none;
 }
+.about-bio-line{display:block; white-space:nowrap;}
 .about-bio-detail{
   font-family:var(--f-body); font-size:0.875rem; line-height:1.7;
   color:var(--text-dim); margin-top:16px; max-width:480px;
