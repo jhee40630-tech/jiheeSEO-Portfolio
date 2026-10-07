@@ -385,7 +385,7 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 
 .about-header{
   display:flex; align-items:flex-start; justify-content:space-between;
-  gap:40px; flex-wrap:wrap;
+  gap:40px; flex-wrap:nowrap;
   border-bottom:1px solid var(--line);
   padding-bottom:44px; margin-bottom:44px;
 }
@@ -411,10 +411,16 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 .about-copied.is-visible{opacity:1;}
 .about-bio-lead{
   font-family:var(--f-body); font-weight:500;
-  font-size:1.5rem; line-height:1.5;
+  font-size:1.25rem; line-height:1.5;
   color:var(--text); margin-top:24px; max-width:none;
 }
 .about-bio-line{display:block; white-space:nowrap;}
+/* 5줄이 줄바꿈 없이 한 줄씩 나오도록 텍스트 열은 줄어들지 않고, 사진은 그 오른쪽에 붙는다.
+   (구분선/TOOLS/EDUCATION 폭은 그대로 — 텍스트+사진이 열보다 넓으면 오른쪽 빈 여백으로 이어진다) */
+.about-header-text{flex:none;}
+.about-photo{margin-left:0;}
+/* 화면이 이보다 좁으면 텍스트+사진이 들어갈 수 없으므로 사진을 아래로 내린다(이전 동작) */
+@media(max-width:1680px){ .about-header{flex-wrap:wrap;} }
 .about-bio-detail{
   font-family:var(--f-body); font-size:0.875rem; line-height:1.7;
   color:var(--text-dim); margin-top:16px; max-width:480px;
