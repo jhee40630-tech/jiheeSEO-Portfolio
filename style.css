@@ -313,48 +313,25 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
    flex:0 0 auto라서 타일이 이미지보다 커질 수 없고, 그래서 이미지 옆에 남는
    공간 자체가 생기지 않는다. */
 .university-duo{
-  display:flex;
-  flex-wrap:nowrap; /* 항상 한 줄 — 좁은 화면이라고 세로로 쌓이지 않는다 */
-  align-items:flex-start; /* 위 기준 정렬 — 두 타일 높이가 어차피 같아서 결과는 동일 */
+  /* 두 타일이 한 줄을 정확히 절반씩 차지한다 (왼쪽 DESIGN / 오른쪽 PAINTING). */
+  display:grid;
+  grid-template-columns:1fr 1fr;
   gap:var(--tile-gap);
-  justify-content:flex-start; /* 왼쪽 정렬. center로 바꾸지 말 것 — 그러면 첫 작품이
-                                  WORKS 썸네일의 왼쪽 기준선에서 안쪽으로 밀린다 */
+  /* cqw = 이 컨테이너 폭의 1% — WORKS 썸네일 줄 높이(컨테이너 폭 × --uniform-row-k)와
+     똑같은 높이를 만들기 위해 사용한다. */
+  container-type:inline-size;
 }
 .university-duo .tile{
-  /* 기본 .tile 규칙(.tile{ aspect-ratio:calc(var(--ratio,1)/(var(--row-sum,1)*var(--uniform-row-k))) })이
-     University 타일에도 그대로 적용되고 있었다. University에는 --ratio/--row-sum을
-     심어주는 JS가 없으므로 이 계산식은 기본값(1, 1, 0.2)으로 떨어져서
-     "aspect-ratio: 5"(가로가 세로의 5배)가 강제로 걸려 있었던 것 — 바로 이게
-     이미지 오른쪽에 생기던 큰 빈 사각형의 원인이었다. 여기서 aspect-ratio:auto로
-     명시적으로 취소해야 실제 이미지 비율(아래 img의 width:auto/height:100%)로만
-     너비가 결정된다. */
   aspect-ratio:auto;
-  flex:0 0 auto; /* 카드가 이미지 크기 그대로만 차지 — 늘어나거나 남는 공간이 생기지 않는다 */
-  width:auto;
-  /* height의 최솟값(clamp 첫 번째 값)이 220px였는데, 20vw가 220px 밑으로
-     내려가는 순간(= 뷰포트 폭이 1100px 아래로만 내려가도 바로) 그 아래로는
-     더 이상 안 줄고 220px에 고정돼 버렸다. WORKS 그리드 쪽 타일은 애초에
-     이런 최솟값 자체가 없어서(순수 "컨테이너 폭 × k") 창을 계속 줄이면 끝없이
-     같이 줄어드는데, 여기만 유독 "안 줄어드는" 것처럼 보인 원인이 이 220px
-     바닥값이었다. 최솟값을 아주 작은 값(60px, 뷰포트 폭이 300px일 때만 닿는
-     수준)으로 낮춰서, 일반적으로 창을 줄이는 범위에서는 WORKS 썸네일과 똑같이
-     계속 비례해서 줄어들게 했다. */
-  height:clamp(60px, 20vw, 480px); /* 두 타일 모두 이 값 하나를 공유하므로 높이가 항상 서로 같다 */
-  max-width:100%; /* 극단적으로 좁은 화면에서 카드 하나가 컨테이너 폭을 넘지 않게 하는 안전장치 */
+  flex:none;
+  width:100%;
+  height:calc(100cqw * var(--uniform-row-k)); /* 위쪽 WORKS 썸네일과 같은 세로 길이 */
 }
+/* 기본 .tile img 규칙(꽉 채우고 cover로 크롭)을 그대로 사용 */
 .university-duo .tile img{
-  /* 기본 .tile img 규칙(position:absolute + object-fit:cover)은 박스에 맞춰
-     이미지를 잘라내므로 여기서는 취소한다. 높이를 100%로 주고 너비는 auto로
-     둬서 이미지 자신의 원본 가로세로 비율 그대로 렌더링되며, 그 렌더링된 너비가
-     곧 위 .tile의 실제 너비가 된다(= 이미지와 카드가 항상 정확히 같은 크기).
-     object-fit:contain과 max-width:100%는 혹시 모를 극단적으로 좁은 화면에서의
-     안전장치일 뿐, 평소에는 크롭도 레터박스도 생기지 않는다. */
-  position:static;
-  display:block;
-  width:auto;
-  height:100%;
-  max-width:100%;
-  object-fit:contain;
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover; object-position:center;
 }
 
 /* ===== ABOUT PAGE (전체화면 오버레이 — 나머지 상세페이지와 동일한 방식) ===== */
@@ -650,5 +627,14 @@ button{font-family:inherit; cursor:pointer; background:none; border:none; color:
 .footer{padding:8vh var(--edge) 6vh; border-top:1px solid var(--line);}
 .footer-inner{display:flex; flex-direction:column; gap:8px;}
 .footer-mark{font-family:var(--f-display); letter-spacing:.14em; font-size:0.9375rem;}
-.footer-email{color:var(--rust-soft); font-family:var(--f-mono); font-size:0.875rem;}
+.footer-email{
+  color:var(--rust-soft); font-family:var(--f-mono); font-size:0.875rem;
+  position:relative; display:inline-block; align-self:flex-start; cursor:pointer;
+}
+.footer-email:hover{color:var(--rust);}
+.footer-copied{
+  position:absolute; left:100%; top:0; margin-left:12px;
+  color:var(--rust); opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.footer-copied.is-visible{opacity:1;}
 .footer-copy{color:var(--text-faint); font-size:0.75rem; margin-top:8px;}
