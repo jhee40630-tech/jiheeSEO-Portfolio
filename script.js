@@ -500,10 +500,32 @@ async function resolveHeroMedia(base, n) {
 /* hero banner: 이미지/동영상 확장자를 모두 탐색해서, 찾은 쪽만 보여준다.
    같은 폴더에 1.webp와 1.mp4가 함께 있는 경우, 히어로는 항상 동영상을 우선한다
    (resolveMediaUrl은 이미지를 먼저 찾기 때문에 여기서는 그걸 쓰지 않는다). */
+/* 히어로 로테이션: 새로고침(방문)할 때마다 아래 목록을 순서대로 번갈아 보여준다.
+   첫 방문은 목록의 맨 앞(Ballista), 다음 새로고침은 Desert, 그다음은 다시 Ballista … */
+const HERO_BASES = [
+  `${IMAGE_ROOT}/11Ballista`,
+  `${IMAGE_ROOT}/10Desert`,
+];
+
+function pickHeroBase() {
+  let idx = 0;
+  try {
+    const saved = parseInt(localStorage.getItem("heroRotationIdx"), 10);
+    idx = Number.isFinite(saved) ? ((saved % HERO_BASES.length) + HERO_BASES.length) % HERO_BASES.length : 0;
+    localStorage.setItem("heroRotationIdx", String((idx + 1) % HERO_BASES.length));
+  } catch (e) {
+    // localStorage를 못 쓰는 환경(시크릿 모드 등)에서는 무작위로 하나 선택
+    idx = Math.floor(Math.random() * HERO_BASES.length);
+  }
+  return HERO_BASES[idx];
+}
+
 async function setHeroImage() {
   const heroVideo = document.getElementById("hero-video");
   const heroImg = document.getElementById("hero-img");
-  const base = heroImg.dataset.base;
+  const base = pickHeroBase();
+  heroImg.dataset.base = base;
+  heroVideo.dataset.base = base;
 
   if (!heroVideo.dataset.errorLoggerAttached) {
     heroVideo.dataset.errorLoggerAttached = "1";
